@@ -5,9 +5,9 @@
                [opened]="(isHandset$ | async) === false">
     <mat-toolbar>Chat history</mat-toolbar>
     <mat-nav-list>
-      <a mat-list-item href="#">History entry 1</a>
-      <a mat-list-item href="#">History entry 2</a>
-      <a mat-list-item href="#">History entry 3</a>
+      <a mat-list-item (click)="newThread()">New chat</a>
+      <a mat-list-item *ngFor="let thread of threads">{{thread}}</a>
+
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
@@ -23,9 +23,9 @@
       }
       <span>Personal AI Chat Demo</span>
     </mat-toolbar>
-    <deep-chat
+    <deep-chat #deepChat
       style="border-radius: 10px; width: 96vw; height: calc(100vh - 70px); padding-top: 10px"
-      [demo]="true">
+      [request]="{'url': 'http://localhost:8080/chat'}">
 
     </deep-chat>
   </mat-sidenav-content>

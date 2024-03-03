@@ -5,6 +5,8 @@ from flask_cors import CORS
 import os
 
 from services.aiservice import AIService
+from services.history_inmemory_repository import HistoryInMemoryRepository
+from services.history_service import HistoryService
 
 # ------------------ SETUP ------------------
 
@@ -14,6 +16,12 @@ app = Flask(__name__)
 
 # this will need to be reconfigured before taking the app to production
 cors = CORS(app)
+
+history_repository = HistoryInMemoryRepository()
+
+history_service = HistoryService(history_repository)
+
+ai_service = AIService(history_service)
 
 
 # ------------------ EXCEPTION HANDLERS ------------------
@@ -32,13 +40,18 @@ def handle_exception(e):
     return {"error": "Internal service error"}, 500
 
 
-ai_service = AIService()
-
-
 @app.route("/chat", methods=["POST"])
 def chat():
     body = request.json
-    return ai_service.chat(body)
+    user_id = request.headers.get('User-Id')
+    if user_id is None:
+        return {"error": "User-Id header is required"}, 400
+
+    thread_id = request.headers.get('Thread-Id')
+    if thread_id is None:
+        return {"error": "Thread-Id header is required"}, 400
+
+    return ai_service.chat(body, user_id, thread_id)
 
 
 @app.route("/chat-stream", methods=["POST"])
@@ -50,6 +63,12 @@ def chat_stream():
 @app.route("/files", methods=["POST"])
 def files():
     return ai_service.files(request)
+
+
+@app.route("/history", methods=["GET"])
+def history():
+    user_id = request.headers.get('User-Id')
+    return history_service.get_history(user_id)
 
 
 # ------------------ START SERVER ------------------
