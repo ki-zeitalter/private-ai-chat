@@ -26,10 +26,12 @@
     </mat-toolbar>
     <deep-chat #deepChat
                style="border-radius: 10px; width: 80vw; height: calc(100vh - 70px); padding-top: 10px"
-               [request]="{'url': 'http://localhost:8080/chat'}"
+               [request]="{'url': 'http://localhost:8080/chat-stream'}"
                requestBodyLimits='{
                   "maxMessages": 0
                }'
+
+               [stream]="true"
 
 
     >

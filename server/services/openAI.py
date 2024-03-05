@@ -41,7 +41,7 @@ class OpenAI:
         # https://deepchat.dev/docs/connect/#Response
         return {"text": result}
 
-    def chat_stream(self, body):
+    def chat_stream(self, body, callback):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + os.getenv("OPENAI_API_KEY")
@@ -51,14 +51,15 @@ class OpenAI:
             "https://api.openai.com/v1/chat/completions", json=chat_body, headers=headers, stream=True)
 
         def generate():
+            final_answer = ""
             # increase chunk size if getting errors for long messages
             for chunk in response.iter_content(chunk_size=2048):
                 if chunk:
                     if not (chunk.decode().strip().startswith("data")):
-                        errorMessage = json.loads(chunk.decode())["error"]["message"]
-                        print("Error in the retrieved stream chunk:", errorMessage)
+                        error_message = json.loads(chunk.decode())["error"]["message"]
+                        print("Error in the retrieved stream chunk:", error_message)
                         # this exception is not caught, however it signals to the user that there was an error
-                        raise Exception(errorMessage)
+                        raise Exception(error_message)
                     lines = chunk.decode().split("\n")
                     filtered_lines = list(
                         filter(lambda line: line.strip(), lines))
@@ -69,12 +70,15 @@ class OpenAI:
                             try:
                                 result = json.loads(data)
                                 content = result["choices"][0].get("delta", {}).get("content", "")
+                                final_answer += content
                                 # Sends response back to Deep Chat using the Response format:
                                 # https://deepchat.dev/docs/connect/#Response
                                 yield "data: {}\n\n".format(json.dumps({"text": content}))
                             except json.JSONDecodeError:
                                 # Incomplete JSON string, continue accumulating lines
                                 pass
+
+            callback(final_answer)
 
         return Response(generate(), mimetype="text/event-stream")
 

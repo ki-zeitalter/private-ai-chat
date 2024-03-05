@@ -114,7 +114,6 @@ export class AppComponent implements AfterViewInit, OnInit {
   activateThread(thread: History) {
     this.currentThreadId = thread.thread_id;
 
-    // TODO: pass a copy of the messages
     this.deepChatElement.nativeElement.initialMessages = thread.messages;
   }
 }

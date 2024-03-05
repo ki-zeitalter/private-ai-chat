@@ -60,7 +60,16 @@ def chat():
 @app.route("/chat-stream", methods=["POST"])
 def chat_stream():
     body = request.json
-    return ai_service.chat_stream(body)
+
+    user_id = request.headers.get('User-Id')
+    if user_id is None:
+        return {"error": "User-Id header is required"}, 400
+
+    thread_id = request.headers.get('Thread-Id')
+    if thread_id is None:
+        return {"error": "Thread-Id header is required"}, 400
+
+    return ai_service.chat_stream(body, user_id, thread_id)
 
 
 @app.route("/files", methods=["POST"])
