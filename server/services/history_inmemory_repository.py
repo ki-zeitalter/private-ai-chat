@@ -2,18 +2,19 @@ class HistoryInMemoryRepository:
     def __init__(self):
         self._history = []
 
-    def add_history(self, user_id, thread_id, history):
+    def add_history(self, user_id, thread_id, messages):
         index_of_existing = self._get_history_index(user_id, thread_id)
+
         if index_of_existing is not None:
-            self._history[index_of_existing]["history"] = history
+            self._history[index_of_existing]["messages"] = messages
         else:
-            self._history.append({"user_id": user_id, "thread_id": thread_id, "history": history})
+            self._history.append({"user_id": user_id, "thread_id": thread_id, "messages": messages})
 
     def get_history(self, user_id):
-        return [item["history"] for item in self._history if item["user_id"] == user_id]
+        return [item for item in self._history if item["user_id"] == user_id]
 
     def get_history_thread(self, user_id, thread_id):
-        return [item["history"] for item in self._history if
+        return [item["messages"] for item in self._history if
                 item["user_id"] == user_id and item["thread_id"] == thread_id]
 
     def _get_history_index(self, user_id, thread_id):

@@ -68,6 +68,8 @@ def files():
 @app.route("/history", methods=["GET"])
 def history():
     user_id = request.headers.get('User-Id')
+    if user_id is None:
+        return {"error": "User-Id header is required"}, 400
     return history_service.get_history(user_id)
 
 

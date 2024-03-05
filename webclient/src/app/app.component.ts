@@ -16,6 +16,10 @@ import {DeepChat} from "deep-chat";
 import {RequestDetails} from "deep-chat/dist/types/interceptors";
 
 import {v4 as uuidv4} from 'uuid';
+import {ThreadsService} from "./services/threads.service";
+import {HttpClientModule} from "@angular/common/http";
+import {History} from "./model/history.model";
+import {MessageContent} from "deep-chat/dist/types/messages";
 
 
 @Component({
@@ -39,7 +43,8 @@ import {v4 as uuidv4} from 'uuid';
     MatSidenavModule,
     MatListModule,
     MatIconModule,
-    AsyncPipe,],
+    AsyncPipe,
+    HttpClientModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -51,7 +56,7 @@ export class AppComponent implements AfterViewInit, OnInit {
 
   currentThreadId?: string;
 
-  threads: string[] = []
+  threads: History[] = []
 
   private breakpointObserver = inject(BreakpointObserver);
 
@@ -61,12 +66,20 @@ export class AppComponent implements AfterViewInit, OnInit {
       shareReplay()
     );
 
-  constructor() {
-    this.userId = uuidv4();
+  constructor(private threadsService: ThreadsService) {
+    const userId = localStorage.getItem('User-Id');
+    if (userId) {
+      this.userId = userId;
+    } else {
+      this.userId = uuidv4();
+      localStorage.setItem('User-Id', this.userId);
+    }
   }
 
   ngOnInit() {
     this.newThread();
+
+    this.loadThreadNames();
   }
 
   ngAfterViewInit(): void {
@@ -88,8 +101,18 @@ export class AppComponent implements AfterViewInit, OnInit {
     this.deepChatElement?.nativeElement.clearMessages();
   }
 
-  loadThreadNames(){
+  loadThreadNames() {
+    this.threadsService.loadThreads(this.userId).subscribe(history => {
+      console.log(history)
 
+      this.threads = history;
+    })
   }
 
+  activateThread(thread: History){
+    this.currentThreadId = thread.thread_id;
+
+// TODO: pass a copy of the messages
+    this.deepChatElement.nativeElement.initialMessages = thread.messages;
+  }
 }

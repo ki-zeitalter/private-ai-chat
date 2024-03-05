@@ -18,7 +18,7 @@ class AIService:
         # Save the message to the history
         self.history_service.add_history(user_id, thread_id, body["messages"])
 
-        return {"text": "This is a response from a Flask server. Thankyou for your message!"}
+        return {"text": "This is a response from a Flask server. Thank you for your message!"}
 
     def chat_stream(self, body):
         # Text messages are stored inside request body using the Deep Chat JSON format:

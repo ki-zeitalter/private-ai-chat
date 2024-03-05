@@ -6,7 +6,7 @@
     <mat-toolbar>Chat history</mat-toolbar>
     <mat-nav-list>
       <a mat-list-item (click)="newThread()">New chat</a>
-      <a mat-list-item *ngFor="let thread of threads">{{thread}}</a>
+      <a mat-list-item *ngFor="let thread of threads" (click)="activateThread(thread)">{{ thread.thread_id }}</a>
 
     </mat-nav-list>
   </mat-sidenav>
@@ -24,8 +24,12 @@
       <span>Personal AI Chat Demo</span>
     </mat-toolbar>
     <deep-chat #deepChat
-      style="border-radius: 10px; width: 96vw; height: calc(100vh - 70px); padding-top: 10px"
-      [request]="{'url': 'http://localhost:8080/chat'}">
+               style="border-radius: 10px; width: 80vw; height: calc(100vh - 70px); padding-top: 10px"
+               [request]="{'url': 'http://localhost:8080/chat'}"
+               requestBodyLimits='{
+                  "maxMessages": 0
+               }'
+    >
 
     </deep-chat>
   </mat-sidenav-content>
