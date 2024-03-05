@@ -7,6 +7,7 @@ import os
 from services.aiservice import AIService
 from services.history_inmemory_repository import HistoryInMemoryRepository
 from services.history_service import HistoryService
+from services.openAI import OpenAI
 
 # ------------------ SETUP ------------------
 
@@ -21,7 +22,9 @@ history_repository = HistoryInMemoryRepository()
 
 history_service = HistoryService(history_repository)
 
-ai_service = AIService(history_service)
+openai_service = OpenAI()
+
+ai_service = AIService(history_service, openai_service)
 
 
 # ------------------ EXCEPTION HANDLERS ------------------

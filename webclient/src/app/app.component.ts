@@ -79,7 +79,7 @@ export class AppComponent implements AfterViewInit, OnInit {
   ngOnInit() {
     this.newThread();
 
-    this.loadThreadNames();
+    this.loadThreads();
   }
 
   ngAfterViewInit(): void {
@@ -93,6 +93,10 @@ export class AppComponent implements AfterViewInit, OnInit {
 
       return requestDetails;
     };
+
+    this.deepChatElement.nativeElement.onNewMessage = (message) => {
+      this.loadThreads();
+    };
   }
 
   newThread(): void {
@@ -101,13 +105,13 @@ export class AppComponent implements AfterViewInit, OnInit {
     this.deepChatElement?.nativeElement.clearMessages();
   }
 
-  loadThreadNames() {
+  loadThreads() {
     this.threadsService.loadThreads(this.userId).subscribe(history => {
       this.threads = history;
     })
   }
 
-  activateThread(thread: History){
+  activateThread(thread: History) {
     this.currentThreadId = thread.thread_id;
 
     // TODO: pass a copy of the messages
