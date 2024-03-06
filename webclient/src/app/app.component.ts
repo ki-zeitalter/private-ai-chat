@@ -19,24 +19,27 @@ import {v4 as uuidv4} from 'uuid';
 import {ThreadsService} from "./services/threads.service";
 import {HttpClientModule} from "@angular/common/http";
 import {History} from "./model/history.model";
-import {IntroMessage, MessageContent} from "deep-chat/dist/types/messages";
+import {MessageContent} from "deep-chat/dist/types/messages";
 import {MatGridList, MatGridTile, MatGridTileText} from "@angular/material/grid-list";
 import {
   MatCard,
   MatCardActions,
   MatCardContent,
-  MatCardHeader, MatCardImage,
+  MatCardHeader,
+  MatCardImage,
   MatCardSubtitle,
   MatCardTitle
 } from "@angular/material/card";
 import {AICard} from "./model/ai-card.model";
-
+import './code_highlight';
+import {HighlightModule} from "ngx-highlightjs";
 
 @Component({
   selector: 'app-root',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
+    HighlightModule,
     CommonModule,
     RouterOutlet,
     AsyncPipe,
@@ -83,6 +86,7 @@ export class AppComponent implements AfterViewInit, OnInit {
 
   private breakpointObserver = inject(BreakpointObserver);
 
+
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),
@@ -91,6 +95,7 @@ export class AppComponent implements AfterViewInit, OnInit {
 
   constructor(private threadsService: ThreadsService) {
     const userId = localStorage.getItem('User-Id');
+
     if (userId) {
       this.userId = userId;
     } else {
@@ -120,7 +125,9 @@ export class AppComponent implements AfterViewInit, OnInit {
     };
 
     this.deepChatElement.nativeElement.onNewMessage = (message) => {
-      this.loadThreads();
+      window.setTimeout(() => this.loadThreads(), 2000);
+
+      this.deepChatElement.nativeElement.refreshMessages();
     };
   }
 
@@ -169,7 +176,7 @@ export class AppComponent implements AfterViewInit, OnInit {
 
         this.newThread(appMessages);
 
-        this.deepChatElement.nativeElement.introMessage = {'text': 'Please enter the topic of the email!'} as IntroMessage
+        //this.deepChatElement.nativeElement.introMessage = {'text': 'Please enter the topic of the email!'} as IntroMessage
 
         this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Insert topic of the email here!'}}
       }
