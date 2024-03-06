@@ -19,7 +19,7 @@ import {v4 as uuidv4} from 'uuid';
 import {ThreadsService} from "./services/threads.service";
 import {HttpClientModule} from "@angular/common/http";
 import {History} from "./model/history.model";
-import {MessageContent} from "deep-chat/dist/types/messages";
+import {IntroMessage, MessageContent} from "deep-chat/dist/types/messages";
 import {MatGridList, MatGridTile, MatGridTileText} from "@angular/material/grid-list";
 import {
   MatCard,
@@ -124,10 +124,13 @@ export class AppComponent implements AfterViewInit, OnInit {
     };
   }
 
-  newThread(): void {
+  newThread(initialMessages: MessageContent[] = []): void {
     this.currentThreadId = uuidv4();
 
-    this.deepChatElement?.nativeElement.clearMessages();
+    if(this.deepChatElement){
+      this.deepChatElement.nativeElement.clearMessages();
+      this.deepChatElement.nativeElement.initialMessages = initialMessages;
+    }
   }
 
   loadThreads() {
@@ -149,7 +152,18 @@ export class AppComponent implements AfterViewInit, OnInit {
       name: 'Email assistant',
       description: 'Write an email with the help of a ai assistant',
       icon: '',
-      action: () => console.log("Action!")
+      action: () => {
+        console.log("Email assistant app activated");
+        const appMessages: MessageContent[] = [];
+
+        appMessages.push({role: 'ai', 'text': 'Hello! I am your AI assistant for writing professional sounding emails!'})
+
+        this.newThread(appMessages);
+
+        this.deepChatElement.nativeElement.introMessage = {'text': 'Please enter the topic of the email!'} as IntroMessage
+
+        this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Insert topic of the email here!'}}
+      }
     })
 
     return result;
