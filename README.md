@@ -26,7 +26,7 @@ It enables you to change settings, like the port to use.
 
 
 ## Frontend Chat Client
-The frontend chat client is Angular based. Therefore you will need Node and the Angular CLI. CD into the _webclient_ folder
+The frontend chat client is Angular based. Therefore, you will need Node and the Angular CLI. CD into the _webclient_ folder
 and execute following command in order to install the requirements:
 
 `npm install`
@@ -36,3 +36,8 @@ When it is done, you can start the client in a development mode as following:
 `ng serve`
 
 The web frontend will be provided at http://localhost:4200/.
+
+
+# Credits
+
+This application uses <a href="https://www.freepik.com/icons/chatbot">chatbot icon by UIcons</a>
