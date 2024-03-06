@@ -76,6 +76,9 @@ export class AppComponent implements AfterViewInit, OnInit {
 
   @ViewChild('deepChat') deepChatElement!: ElementRef<DeepChat>;
 
+  @ViewChild('welcomePanel') welcomePanel!: ElementRef;
+
+
   userId: string;
 
   currentThreadId?: string;
@@ -140,9 +143,12 @@ export class AppComponent implements AfterViewInit, OnInit {
       this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Your message...'}}
       this.deepChatElement.nativeElement.clearMessages(true);
 
+
       if (initialMessages) {
         this.deepChatElement.nativeElement.initialMessages = initialMessages;
       }
+
+      this.welcomePanel.nativeElement.display = "block";
     }
   }
 
