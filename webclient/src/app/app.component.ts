@@ -20,6 +20,16 @@ import {ThreadsService} from "./services/threads.service";
 import {HttpClientModule} from "@angular/common/http";
 import {History} from "./model/history.model";
 import {MessageContent} from "deep-chat/dist/types/messages";
+import {MatGridList, MatGridTile, MatGridTileText} from "@angular/material/grid-list";
+import {
+  MatCard,
+  MatCardActions,
+  MatCardContent,
+  MatCardHeader, MatCardImage,
+  MatCardSubtitle,
+  MatCardTitle
+} from "@angular/material/card";
+import {AICard} from "./model/ai-card.model";
 
 
 @Component({
@@ -44,7 +54,18 @@ import {MessageContent} from "deep-chat/dist/types/messages";
     MatListModule,
     MatIconModule,
     AsyncPipe,
-    HttpClientModule],
+    HttpClientModule,
+    MatGridList,
+    MatGridTile,
+    MatGridTileText,
+    MatCardActions,
+    MatCardContent,
+    MatCardSubtitle,
+    MatCardTitle,
+    MatCardHeader,
+    MatCard,
+    MatCardImage
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -57,6 +78,8 @@ export class AppComponent implements AfterViewInit, OnInit {
   currentThreadId?: string;
 
   threads: History[] = []
+
+  aiCards: AICard[] = [];
 
   private breakpointObserver = inject(BreakpointObserver);
 
@@ -80,6 +103,8 @@ export class AppComponent implements AfterViewInit, OnInit {
     this.newThread();
 
     this.loadThreads();
+
+    this.aiCards = this.constructDemoCards();
   }
 
   ngAfterViewInit(): void {
@@ -115,5 +140,18 @@ export class AppComponent implements AfterViewInit, OnInit {
     this.currentThreadId = thread.thread_id;
 
     this.deepChatElement.nativeElement.initialMessages = thread.messages;
+  }
+
+  constructDemoCards(): AICard[] {
+    const result: AICard[] = [];
+
+    result.push({
+      name: 'Email assistant',
+      description: 'Write an email with the help of a ai assistant',
+      icon: '',
+      action: () => console.log("Action!")
+    })
+
+    return result;
   }
 }

@@ -56,6 +56,7 @@ class OpenAI:
             for chunk in response.iter_content(chunk_size=2048):
                 if chunk:
                     if not (chunk.decode().strip().startswith("data")):
+                        print("Chunk should start with 'data':", chunk.decode())
                         error_message = json.loads(chunk.decode())["error"]["message"]
                         print("Error in the retrieved stream chunk:", error_message)
                         # this exception is not caught, however it signals to the user that there was an error
