@@ -124,12 +124,18 @@ export class AppComponent implements AfterViewInit, OnInit {
     };
   }
 
-  newThread(initialMessages: MessageContent[] = []): void {
+  newThread(initialMessages?: MessageContent[]): void {
     this.currentThreadId = uuidv4();
 
-    if(this.deepChatElement){
-      this.deepChatElement.nativeElement.clearMessages();
-      this.deepChatElement.nativeElement.initialMessages = initialMessages;
+    if (this.deepChatElement) {
+      this.deepChatElement.nativeElement.initialMessages = []
+      this.deepChatElement.nativeElement.introMessage = {'text': 'Welcome!'};
+      this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Your message...'}}
+      this.deepChatElement.nativeElement.clearMessages(true);
+
+      if (initialMessages) {
+        this.deepChatElement.nativeElement.initialMessages = initialMessages;
+      }
     }
   }
 
@@ -156,7 +162,10 @@ export class AppComponent implements AfterViewInit, OnInit {
         console.log("Email assistant app activated");
         const appMessages: MessageContent[] = [];
 
-        appMessages.push({role: 'ai', 'text': 'Hello! I am your AI assistant for writing professional sounding emails!'})
+        appMessages.push({
+          role: 'ai',
+          'text': 'Hello! I am your AI assistant for writing professional sounding emails!'
+        })
 
         this.newThread(appMessages);
 
