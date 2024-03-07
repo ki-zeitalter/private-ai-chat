@@ -16,7 +16,7 @@ import {map, shareReplay} from "rxjs/operators";
 import {ThreadsService} from "../../services/threads.service";
 import {ChatService} from "../../services/chat.service";
 import {MessageContent} from "deep-chat/dist/types/messages";
-import {RouterOutlet} from "@angular/router";
+import {Router, RouterOutlet} from "@angular/router";
 
 @Component({
   selector: 'app-menu',
@@ -46,7 +46,7 @@ import {RouterOutlet} from "@angular/router";
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
 })
-export class MenuComponent implements OnInit{
+export class MenuComponent implements OnInit {
   threads: History[] = []
   aiCards: AICard[] = [];
 
@@ -59,7 +59,10 @@ export class MenuComponent implements OnInit{
       shareReplay()
     );
 
-  constructor(private threadsService: ThreadsService, private chatService: ChatService) {
+  constructor(
+    private threadsService: ThreadsService,
+    private chatService: ChatService,
+    private router: Router) {
   }
 
   ngOnInit() {
@@ -76,7 +79,9 @@ export class MenuComponent implements OnInit{
 
 
   newThread(initialMessages?: MessageContent[]): void {
-    this.chatService.newThread(initialMessages);
+    this.router.navigate(['chat']).then(() => {
+      this.chatService.newThread(initialMessages);
+    })
   }
 
   loadThreads() {
@@ -86,7 +91,9 @@ export class MenuComponent implements OnInit{
   }
 
   activateThread(thread: History) {
-    this.chatService.activateThread(thread);
+    this.router.navigate(['chat']).then(() => {
+      this.chatService.activateThread(thread);
+    })
 
   }
 
@@ -99,19 +106,34 @@ export class MenuComponent implements OnInit{
       icon: '',
       action: () => {
         console.log("Email assistant app activated");
-        const appMessages: MessageContent[] = [];
 
-        appMessages.push({
-          role: 'ai',
-          'text': 'Hello! I am your AI assistant for writing professional sounding emails!'
+        this.router.navigate(['chat']).then(() => {
+          const appMessages: MessageContent[] = [];
+
+          appMessages.push({
+            role: 'ai',
+            'text': 'Hello! I am your AI assistant for writing professional sounding emails!'
+          })
+
+          this.newThread(appMessages);
+
+          //this.deepChatElement.nativeElement.introMessage = {'text': 'Please enter the topic of the email!'} as IntroMessage
+
+          // TODO
+          //this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Insert topic of the email here!'}}
         })
 
-        this.newThread(appMessages);
+      }
+    })
 
-        //this.deepChatElement.nativeElement.introMessage = {'text': 'Please enter the topic of the email!'} as IntroMessage
+    result.push({
+      name: 'Generate images',
+      description: 'Generate images by DALL-E 3',
+      icon: '',
+      action: () => {
+        const appMessages: MessageContent[] = [];
 
-        // TODO
-        //this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Insert topic of the email here!'}}
+        this.router.navigate(['text-to-image'])
       }
     })
 

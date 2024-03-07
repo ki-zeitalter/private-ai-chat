@@ -30,7 +30,7 @@ class OpenAI:
         # Text messages are stored inside request body using the Deep Chat JSON format:
         # https://deepchat.dev/docs/connect
         chat_body = {
-            "prompt": body["messages"][0]["text"],
+            "prompt": body["messages"][-1]["text"],
             "model": body.get("model", "dall-e-3"),
             "n": 1,
             "size": "1024x1024",
