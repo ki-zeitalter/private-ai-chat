@@ -72,6 +72,19 @@ def chat_stream():
     return ai_service.chat_stream(body, user_id, thread_id)
 
 
+@app.route("/text-to-image", methods=["POST"])
+def text_to_image():
+    body = request.json
+    user_id = request.headers.get('User-Id')
+    if user_id is None:
+        return {"error": "User-Id header is required"}, 400
+
+    thread_id = request.headers.get('Thread-Id')
+    if thread_id is None:
+        return {"error": "Thread-Id header is required"}, 400
+    return ai_service.text_to_image(body, user_id, thread_id)
+
+
 @app.route("/files", methods=["POST"])
 def files():
     return ai_service.files(request)

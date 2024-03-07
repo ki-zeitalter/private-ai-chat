@@ -25,6 +25,20 @@ class OpenAI:
             chat_body["stream"] = True
         return chat_body
 
+    @staticmethod
+    def create_text_to_image_body(body):
+        # Text messages are stored inside request body using the Deep Chat JSON format:
+        # https://deepchat.dev/docs/connect
+        chat_body = {
+            "prompt": body["messages"][0]["text"],
+            "model": body.get("model", "dall-e-3"),
+            "n": 1,
+            "size": "1024x1024",
+            "response_format": "b64_json"
+        }
+
+        return chat_body
+
     def chat(self, body):
         headers = {
             "Content-Type": "application/json",
@@ -82,6 +96,29 @@ class OpenAI:
             callback(final_answer)
 
         return Response(generate(), mimetype="text/event-stream")
+
+    def text_to_image(self, body):
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + os.getenv("OPENAI_API_KEY")
+        }
+        chat_body = self.create_text_to_image_body(body)
+
+        print(chat_body)
+
+        response = requests.post(
+            "https://api.openai.com/v1/images/generations", json=chat_body, headers=headers)
+        json_response = response.json()
+
+        print(json_response)
+
+        if "error" in json_response:
+            raise Exception(json_response["error"]["message"])
+
+        result = json_response["data"][0]["b64_json"]
+        # Sends response back to Deep Chat using the Response format:
+        # https://deepchat.dev/docs/connect/#Response
+        return {"files": [{"type": "image", "src": "data:image/png;base64," + result}]}
 
     # By default - the OpenAI API will accept 1024x1024 png images, however other dimensions/formats can sometimes work by default
     # You can use an example image here: https://github.com/OvidijusParsiunas/deep-chat/blob/main/example-servers/ui/assets/example-image.png
