@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
+import {Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 
 import {AsyncPipe, CommonModule} from "@angular/common";
@@ -12,10 +12,6 @@ import {Observable} from "rxjs";
 import {map, shareReplay} from "rxjs/operators";
 
 import 'deep-chat'
-import {DeepChat} from "deep-chat";
-import {RequestDetails} from "deep-chat/dist/types/interceptors";
-
-import {v4 as uuidv4} from 'uuid';
 import {ThreadsService} from "./services/threads.service";
 import {HttpClientModule} from "@angular/common/http";
 import {History} from "./model/history.model";
@@ -33,6 +29,8 @@ import {
 import {AICard} from "./model/ai-card.model";
 import './code_highlight';
 import {HighlightModule} from "ngx-highlightjs";
+import {ChatComponent} from "./components/chat/chat.component";
+import {ChatService} from "./services/chat.service";
 
 @Component({
   selector: 'app-root',
@@ -67,24 +65,14 @@ import {HighlightModule} from "ngx-highlightjs";
     MatCardTitle,
     MatCardHeader,
     MatCard,
-    MatCardImage
+    MatCardImage,
+    ChatComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements AfterViewInit, OnInit {
-
-  @ViewChild('deepChat') deepChatElement!: ElementRef<DeepChat>;
-
-  @ViewChild('welcomePanel') welcomePanel!: ElementRef;
-
-
-  userId: string;
-
-  currentThreadId?: string;
-
+export class AppComponent implements OnInit {
   threads: History[] = []
-
   aiCards: AICard[] = [];
 
   private breakpointObserver = inject(BreakpointObserver);
@@ -96,15 +84,7 @@ export class AppComponent implements AfterViewInit, OnInit {
       shareReplay()
     );
 
-  constructor(private threadsService: ThreadsService) {
-    const userId = localStorage.getItem('User-Id');
-
-    if (userId) {
-      this.userId = userId;
-    } else {
-      this.userId = uuidv4();
-      localStorage.setItem('User-Id', this.userId);
-    }
+  constructor(private threadsService: ThreadsService, private chatService: ChatService) {
   }
 
   ngOnInit() {
@@ -113,55 +93,26 @@ export class AppComponent implements AfterViewInit, OnInit {
     this.loadThreads();
 
     this.aiCards = this.constructDemoCards();
-  }
 
-  ngAfterViewInit(): void {
-    this.deepChatElement.nativeElement.requestInterceptor = (requestDetails: RequestDetails) => {
-      if (requestDetails.headers) {
-        requestDetails.headers['User-Id'] = this.userId;
-
-        if (this.currentThreadId)
-          requestDetails.headers['Thread-Id'] = this.currentThreadId;
-      }
-
-      return requestDetails;
-    };
-
-    this.deepChatElement.nativeElement.onNewMessage = (message) => {
+    this.chatService.onNewMessage.subscribe(() => {
       window.setTimeout(() => this.loadThreads(), 2000);
-
-      this.deepChatElement.nativeElement.refreshMessages();
-    };
+    });
   }
+
 
   newThread(initialMessages?: MessageContent[]): void {
-    this.currentThreadId = uuidv4();
-
-    if (this.deepChatElement) {
-      this.deepChatElement.nativeElement.initialMessages = []
-      this.deepChatElement.nativeElement.introMessage = {'text': 'Welcome!'};
-      this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Your message...'}}
-      this.deepChatElement.nativeElement.clearMessages(true);
-
-
-      if (initialMessages) {
-        this.deepChatElement.nativeElement.initialMessages = initialMessages;
-      }
-
-      this.welcomePanel.nativeElement.display = "block";
-    }
+    this.chatService.newThread(initialMessages);
   }
 
   loadThreads() {
-    this.threadsService.loadThreads(this.userId).subscribe(history => {
+    this.threadsService.loadThreads(this.chatService.userId).subscribe(history => {
       this.threads = history;
     })
   }
 
   activateThread(thread: History) {
-    this.currentThreadId = thread.thread_id;
+    this.chatService.activateThread(thread);
 
-    this.deepChatElement.nativeElement.initialMessages = thread.messages;
   }
 
   constructDemoCards(): AICard[] {
@@ -184,7 +135,8 @@ export class AppComponent implements AfterViewInit, OnInit {
 
         //this.deepChatElement.nativeElement.introMessage = {'text': 'Please enter the topic of the email!'} as IntroMessage
 
-        this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Insert topic of the email here!'}}
+        // TODO
+        //this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Insert topic of the email here!'}}
       }
     })
 
