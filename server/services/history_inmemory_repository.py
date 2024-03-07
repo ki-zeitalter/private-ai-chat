@@ -1,7 +1,9 @@
 from datetime import datetime
 
+from services.history_repository import HistoryRepository
 
-class HistoryInMemoryRepository:
+
+class HistoryInMemoryRepository(HistoryRepository):
     def __init__(self):
         self._history = []
 

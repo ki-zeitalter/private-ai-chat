@@ -1,7 +1,8 @@
+from services.history_repository import HistoryRepository
 
 
 class HistoryService:
-    def __init__(self, history_repository):
+    def __init__(self, history_repository: HistoryRepository):
         self.history_repository = history_repository
 
     def get_history(self, user_id):
