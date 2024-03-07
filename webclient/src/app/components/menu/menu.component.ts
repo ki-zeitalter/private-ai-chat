@@ -16,6 +16,7 @@ import {map, shareReplay} from "rxjs/operators";
 import {ThreadsService} from "../../services/threads.service";
 import {ChatService} from "../../services/chat.service";
 import {MessageContent} from "deep-chat/dist/types/messages";
+import {RouterOutlet} from "@angular/router";
 
 @Component({
   selector: 'app-menu',
@@ -38,7 +39,8 @@ import {MessageContent} from "deep-chat/dist/types/messages";
     MatSidenavContainer,
     MatSidenavContent,
     MatToolbar,
-    NgForOf
+    NgForOf,
+    RouterOutlet
   ],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
