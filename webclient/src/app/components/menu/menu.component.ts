@@ -91,7 +91,14 @@ export class MenuComponent implements OnInit {
   }
 
   activateThread(thread: History) {
-    this.router.navigate(['chat']).then(() => {
+    let target = 'chat'
+
+    if (thread.app_type) {
+      target = thread.app_type;
+    }
+
+
+    this.router.navigate([target]).then(() => {
       this.chatService.activateThread(thread);
     })
 
@@ -105,8 +112,6 @@ export class MenuComponent implements OnInit {
       description: 'Write an email with the help of a ai assistant',
       icon: '',
       action: () => {
-        console.log("Email assistant app activated");
-
         this.router.navigate(['chat']).then(() => {
           const appMessages: MessageContent[] = [];
 
@@ -131,9 +136,7 @@ export class MenuComponent implements OnInit {
       description: 'Generate images by DALL-E 3',
       icon: '',
       action: () => {
-        const appMessages: MessageContent[] = [];
-
-        this.router.navigate(['text-to-image'])
+        this.router.navigate(['text-to-image']).then()
       }
     })
 
