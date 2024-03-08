@@ -1,4 +1,4 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, NgZone, OnInit} from '@angular/core';
 import {AsyncPipe, NgForOf, NgOptimizedImage} from "@angular/common";
 import {ChatComponent} from "../chat/chat.component";
 import {MatButton, MatIconButton} from "@angular/material/button";
@@ -60,6 +60,7 @@ export class MenuComponent implements OnInit {
     );
 
   constructor(
+    private ngZone: NgZone,
     private threadsService: ThreadsService,
     private chatService: ChatService,
     private router: Router) {
@@ -73,7 +74,9 @@ export class MenuComponent implements OnInit {
     this.aiCards = this.constructDemoCards();
 
     this.chatService.onNewMessage.subscribe(() => {
-      window.setTimeout(() => this.loadThreads(), 2000);
+      this.ngZone.run(() =>
+        window.setTimeout(() => this.loadThreads(), 2000)
+      )
     });
   }
 
@@ -87,6 +90,7 @@ export class MenuComponent implements OnInit {
 
   loadThreads() {
     this.threadsService.loadThreads(this.chatService.userId).subscribe(history => {
+      console.log('Threads loaded', history)
       this.threads = history;
     })
   }
