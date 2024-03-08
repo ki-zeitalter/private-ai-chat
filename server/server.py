@@ -7,6 +7,7 @@ import os
 from services.aiservice import AIService
 from services.history_inmemory_repository import HistoryInMemoryRepository
 from services.history_service import HistoryService
+from services.history_sqlite_repository import HistorySQLiteRepository
 from services.openAI import OpenAI
 
 # ------------------ SETUP ------------------
@@ -20,7 +21,9 @@ cors = CORS(app)
 
 history_repository = HistoryInMemoryRepository()
 
-history_service = HistoryService(history_repository)
+history_sqlite = HistorySQLiteRepository('history.db')
+
+history_service = HistoryService(history_sqlite)
 
 openai_service = OpenAI()
 
