@@ -57,22 +57,6 @@ export class BaseChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.onNewThreadSubscription = this.chatService.onNewThread.subscribe(initialMessages => {
-      if (this.deepChatElement) {
-        this.deepChatElement.nativeElement.initialMessages = []
-        this.deepChatElement.nativeElement.introMessage = {'text': 'Welcome!'};
-        this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Your message...'}}
-        this.deepChatElement.nativeElement.clearMessages(true);
-
-
-        if (initialMessages) {
-          this.deepChatElement.nativeElement.initialMessages = initialMessages;
-        }
-
-        this.welcomePanel.nativeElement.display = "block";
-      }
-    });
-
     this.onActivateThreadSubscription = this.chatService.onActivateThread.subscribe(thread => {
       if (thread) {
         this.initialMessages = thread.messages;
@@ -80,7 +64,7 @@ export class BaseChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.initialMessages = undefined;
       }
 
-      if(this.deepChatElement){
+      if (this.deepChatElement) {
         this.deepChatElement.nativeElement.initialMessages = this.initialMessages;
       }
     })

@@ -80,7 +80,8 @@ export class MenuComponent implements OnInit {
 
   newThread(initialMessages?: MessageContent[]): void {
     this.router.navigate(['chat']).then(() => {
-      this.chatService.newThread(initialMessages);
+
+      this.chatService.activateThread(null)
     })
   }
 
@@ -109,24 +110,24 @@ export class MenuComponent implements OnInit {
 
     result.push({
       name: 'Email assistant',
-      description: 'Write an email with the help of a ai assistant',
+      description: 'Write an email with the help of an ai assistant',
       icon: '',
       action: () => {
-        this.router.navigate(['chat']).then(() => {
-          const appMessages: MessageContent[] = [];
 
-          appMessages.push({
-            role: 'ai',
-            'text': 'Hello! I am your AI assistant for writing professional sounding emails!'
-          })
+        const appMessages: MessageContent[] = [];
 
-          this.newThread(appMessages);
-
-          //this.deepChatElement.nativeElement.introMessage = {'text': 'Please enter the topic of the email!'} as IntroMessage
-
-          // TODO
-          //this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Insert topic of the email here!'}}
+        appMessages.push({
+          role: 'ai',
+          'text': 'Hello! I am your AI assistant for writing professional sounding emails!'
         })
+
+        this.newThread(appMessages);
+
+        //this.deepChatElement.nativeElement.introMessage = {'text': 'Please enter the topic of the email!'} as IntroMessage
+
+        // TODO
+        //this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Insert topic of the email here!'}}
+
 
       }
     })
@@ -136,7 +137,9 @@ export class MenuComponent implements OnInit {
       description: 'Generate images by DALL-E 3',
       icon: '',
       action: () => {
-        this.router.navigate(['text-to-image']).then()
+        this.router.navigate(['text-to-image']).then(() =>
+          this.chatService.activateThread(null)
+        )
       }
     })
 
