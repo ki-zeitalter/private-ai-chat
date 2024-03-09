@@ -13,7 +13,6 @@ import {
   MatDialogActions,
   MatDialogClose,
   MatDialogContent,
-  MatDialogRef,
   MatDialogTitle
 } from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
@@ -93,7 +92,6 @@ export class ImageSettings {
   ],
 })
 export class SettingsDialog {
-
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public settings: ImageSettings

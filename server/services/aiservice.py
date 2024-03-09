@@ -1,8 +1,3 @@
-from flask import Response
-import time
-import json
-
-
 class AIService:
 
     def __init__(self, history_service, model_service):
@@ -12,7 +7,7 @@ class AIService:
     def chat(self, body, user_id, thread_id):
         # Text messages are stored inside request body using the Deep Chat JSON format:
         # https://deepchat.dev/docs/connect
-        # print(body)
+
         # Sends response back to Deep Chat using the Response format:
         # https://deepchat.dev/docs/connect/#Response
 
@@ -20,7 +15,7 @@ class AIService:
         messages = body["messages"]
         self.history_service.add_history(user_id, thread_id, messages, 'chat')
 
-        result = self.model_service.chat(body)
+        result = self.model_service.chat(messages)
 
         messages.append({'role': 'ai', 'text': result['text']})
         self.history_service.add_history(user_id, thread_id, messages, 'chat')
@@ -28,9 +23,6 @@ class AIService:
         return result
 
     def chat_stream(self, body, user_id, thread_id):
-        # Text messages are stored inside request body using the Deep Chat JSON format:
-        # https://deepchat.dev/docs/connect
-
         # Save the message to the history
         messages = body["messages"]
         self.history_service.add_history(user_id, thread_id, messages, 'chat')
@@ -39,7 +31,7 @@ class AIService:
             messages.append({'role': 'ai', 'text': response})
             self.history_service.add_history(user_id, thread_id, messages, 'chat')
 
-        return self.model_service.chat_stream(body, callback)
+        return self.model_service.chat_stream(messages, callback)
 
     def text_to_image(self, body, user_id, thread_id):
         messages = body["messages"]

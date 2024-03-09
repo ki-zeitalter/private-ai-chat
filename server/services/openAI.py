@@ -9,7 +9,7 @@ import os
 
 class OpenAI:
     @staticmethod
-    def create_chat_body(body, stream=False):
+    def create_chat_body(messages, stream=False):
         # Text messages are stored inside request body using the Deep Chat JSON format:
         # https://deepchat.dev/docs/connect
         chat_body = {
@@ -17,9 +17,9 @@ class OpenAI:
                 {
                     "role": "assistant" if message["role"] == "ai" else message["role"],
                     "content": message["text"]
-                } for message in body["messages"]
+                } for message in messages
             ],
-            "model": body.get("model", "gpt-4")
+            "model": "gpt-4"
         }
         if stream:
             chat_body["stream"] = True
@@ -41,12 +41,12 @@ class OpenAI:
 
         return chat_body
 
-    def chat(self, body):
+    def chat(self, messages):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + os.getenv("OPENAI_API_KEY")
         }
-        chat_body = self.create_chat_body(body)
+        chat_body = self.create_chat_body(messages)
         response = requests.post(
             "https://api.openai.com/v1/chat/completions", json=chat_body, headers=headers)
         json_response = response.json()
@@ -57,12 +57,12 @@ class OpenAI:
         # https://deepchat.dev/docs/connect/#Response
         return {"text": result}
 
-    def chat_stream(self, body, callback):
+    def chat_stream(self, messages, callback):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + os.getenv("OPENAI_API_KEY")
         }
-        chat_body = self.create_chat_body(body, stream=True)
+        chat_body = self.create_chat_body(messages, stream=True)
         response = requests.post(
             "https://api.openai.com/v1/chat/completions", json=chat_body, headers=headers, stream=True)
 
