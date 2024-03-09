@@ -22,7 +22,6 @@ class AIService:
 
         result = self.model_service.chat(body)
 
-        print(result)
         messages.append({'role': 'ai', 'text': result['text']})
         self.history_service.add_history(user_id, thread_id, messages, 'chat')
 
@@ -31,7 +30,7 @@ class AIService:
     def chat_stream(self, body, user_id, thread_id):
         # Text messages are stored inside request body using the Deep Chat JSON format:
         # https://deepchat.dev/docs/connect
-        print(body)
+
         # Save the message to the history
         messages = body["messages"]
         self.history_service.add_history(user_id, thread_id, messages, 'chat')
@@ -44,8 +43,9 @@ class AIService:
 
     def text_to_image(self, body, user_id, thread_id):
         messages = body["messages"]
+        image_settings = body.get("imageSettings", {})
         self.history_service.add_history(user_id, thread_id, messages, 'text-to-image')
-        result = self.model_service.text_to_image(body)
+        result = self.model_service.text_to_image(messages, image_settings)
 
         messages.append({'role': 'ai', 'files': result['files']})
         self.history_service.add_history(user_id, thread_id, messages, 'text-to-image')

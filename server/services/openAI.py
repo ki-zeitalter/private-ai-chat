@@ -26,14 +26,16 @@ class OpenAI:
         return chat_body
 
     @staticmethod
-    def create_text_to_image_body(body):
+    def create_text_to_image_body(messages, image_settings):
         # Text messages are stored inside request body using the Deep Chat JSON format:
         # https://deepchat.dev/docs/connect
         chat_body = {
-            "prompt": body["messages"][-1]["text"],
-            "model": body.get("model", "dall-e-3"),
+            "prompt": messages[-1]["text"],
+            "model": image_settings.get("model", "dall-e-3"),
             "n": 1,
-            "size": "1024x1024",
+            "size": image_settings.get("size", "1024x1024"),
+            "quality": image_settings.get("quality", "default"),
+            "style": image_settings.get("style", "vivid"),
             "response_format": "b64_json"
         }
 
@@ -97,12 +99,12 @@ class OpenAI:
 
         return Response(generate(), mimetype="text/event-stream")
 
-    def text_to_image(self, body):
+    def text_to_image(self, messages, image_settings):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + os.getenv("OPENAI_API_KEY")
         }
-        chat_body = self.create_text_to_image_body(body)
+        chat_body = self.create_text_to_image_body(messages, image_settings)
 
         print(chat_body)
 

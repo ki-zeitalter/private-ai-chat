@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>Image generation settings</h2>
+<mat-dialog-content>
+  <p>Chose your settings for the image generation</p>
+
+  <p>
+    <mat-form-field>
+      <mat-label>Image size</mat-label>
+      <mat-select [(ngModel)]="settings.size">
+        <mat-option value="1024x1024">1024x1024</mat-option>
+        <mat-option value="1792x1024">1792x1024</mat-option>
+        <mat-option value="1024x1792">1024x1792</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field>
+      <mat-label>Image quality</mat-label>
+      <mat-select [(ngModel)]="settings.quality">
+        <mat-option value="default">Default</mat-option>
+        <mat-option value="hd">HD</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </p>
+  <p>
+    <mat-form-field>
+      <mat-label>Image style</mat-label>
+      <mat-select [(ngModel)]="settings.style">
+        <mat-option value="vivid">Vivid</mat-option>
+        <mat-option value="natural">Natural</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </p>
+
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button [mat-dialog-close]="settings" cdkFocusInitial>Ok</button>
+</mat-dialog-actions>

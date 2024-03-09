@@ -10,7 +10,7 @@ import {RequestDetails} from "deep-chat/dist/types/interceptors";
 
   template: ``
 })
-export class BaseChatComponent implements OnInit, OnDestroy, AfterViewInit {
+export abstract class BaseChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('deepChat') deepChatElement!: ElementRef<DeepChat>;
 
   @ViewChild('welcomePanel') welcomePanel!: ElementRef;
@@ -37,14 +37,7 @@ export class BaseChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.deepChatElement.nativeElement.initialMessages = this.initialMessages;
 
     this.deepChatElement.nativeElement.requestInterceptor = (requestDetails: RequestDetails) => {
-      if (requestDetails.headers) {
-        requestDetails.headers['User-Id'] = this.chatService.userId;
-
-        if (this.chatService.currentThreadId)
-          requestDetails.headers['Thread-Id'] = this.chatService.currentThreadId;
-      }
-
-      return requestDetails;
+      return this.requestInterceptor(requestDetails);
     };
 
     this.deepChatElement.nativeElement.onNewMessage = (message) => {
@@ -54,6 +47,17 @@ export class BaseChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.deepChatElement.nativeElement.refreshMessages();
       }
     };
+  }
+
+  protected requestInterceptor(requestDetails: RequestDetails): RequestDetails {
+    if (requestDetails.headers) {
+      requestDetails.headers['User-Id'] = this.chatService.userId;
+
+      if (this.chatService.currentThreadId)
+        requestDetails.headers['Thread-Id'] = this.chatService.currentThreadId;
+    }
+
+    return requestDetails;
   }
 
   ngOnInit(): void {
