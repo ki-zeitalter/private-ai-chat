@@ -1,7 +1,14 @@
+import queue
+import threading
+
 from flask import Response
 import requests
 import json
 import os
+
+from langchain_core.callbacks import StreamingStdOutCallbackHandler
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_openai import ChatOpenAI
 
 
 # Make sure to set the OPENAI_API_KEY environment variable in a .env file
@@ -57,47 +64,38 @@ class OpenAI:
         # https://deepchat.dev/docs/connect/#Response
         return {"text": result}
 
+    def llm_thread(self, generator, messages):
+        try:
+            chat = ChatOpenAI(
+                verbose=True,
+                streaming=True,
+                callbacks=[ChainStreamHandler(generator)],
+                temperature=0,
+            )
+            # chat([HumanMessage(content=prompt)])
+            chat(messages=messages)
+        finally:
+            generator.close()
+
+    def chain(self, prompt):
+        generator = ThreadedGenerator()
+        threading.Thread(target=self.llm_thread, args=(generator, prompt)).start()
+        return generator
+
+    def convert_messages_to_langchain_format(self, messages):
+        lc_messages = []
+        for message in messages:
+            role = message["role"]
+            content = message["text"]
+            if role == "ai":
+                lc_message = AIMessage(content=content)
+            else:  # role is "human"
+                lc_message = HumanMessage(content=content)
+            lc_messages.append(lc_message)
+        return lc_messages
+
     def chat_stream(self, messages, callback):
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + os.getenv("OPENAI_API_KEY")
-        }
-        chat_body = self.create_chat_body(messages, stream=True)
-        response = requests.post(
-            "https://api.openai.com/v1/chat/completions", json=chat_body, headers=headers, stream=True)
-
-        def generate():
-            final_answer = ""
-            # increase chunk size if getting errors for long messages
-            for chunk in response.iter_content(chunk_size=2048):
-                if chunk:
-                    if not (chunk.decode().strip().startswith("data")):
-                        print("Chunk should start with 'data':", chunk.decode())
-                        error_message = json.loads(chunk.decode())["error"]["message"]
-                        print("Error in the retrieved stream chunk:", error_message)
-                        # this exception is not caught, however it signals to the user that there was an error
-                        raise Exception(error_message)
-                    lines = chunk.decode().split("\n")
-                    filtered_lines = list(
-                        filter(lambda line: line.strip(), lines))
-                    for line in filtered_lines:
-                        data = line.replace("data:", "").replace(
-                            "[DONE]", "").replace("data: [DONE]", "").strip()
-                        if data:
-                            try:
-                                result = json.loads(data)
-                                content = result["choices"][0].get("delta", {}).get("content", "")
-                                final_answer += content
-                                # Sends response back to Deep Chat using the Response format:
-                                # https://deepchat.dev/docs/connect/#Response
-                                yield "data: {}\n\n".format(json.dumps({"text": content}))
-                            except json.JSONDecodeError:
-                                # Incomplete JSON string, continue accumulating lines
-                                pass
-
-            callback(final_answer)
-
-        return Response(generate(), mimetype="text/event-stream")
+        return Response(self.chain(self.convert_messages_to_langchain_format(messages)), mimetype='text/event-stream')
 
     def text_to_image(self, messages, image_settings):
         headers = {
@@ -142,3 +140,31 @@ class OpenAI:
         # Sends response back to Deep Chat using the Response format:
         # https://deepchat.dev/docs/connect/#Response
         return {"files": [{"type": "image", "src": json_response["data"][0]["url"]}]}
+
+
+class ThreadedGenerator:
+    def __init__(self):
+        self.queue = queue.Queue()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        item = self.queue.get()
+        if item is StopIteration: raise item
+        return item
+
+    def send(self, data):
+        self.queue.put(data)
+
+    def close(self):
+        self.queue.put(StopIteration)
+
+
+class ChainStreamHandler(StreamingStdOutCallbackHandler):
+    def __init__(self, gen):
+        super().__init__()
+        self.gen = gen
+
+    def on_llm_new_token(self, token: str, **kwargs):
+        self.gen.send("data: {}\n\n".format(json.dumps({"text": token})))

@@ -104,4 +104,4 @@ def history():
 # ------------------ START SERVER ------------------
 
 if __name__ == "__main__":
-    app.run(port=os.getenv("PORT", 8080))
+    app.run(port=os.getenv("PORT", 8080), threaded=True, debug=True)
