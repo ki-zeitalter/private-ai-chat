@@ -1,6 +1,6 @@
 import {Component, NgZone, OnInit} from '@angular/core';
 import {MatListItem, MatNavList} from "@angular/material/list";
-import {NgForOf} from "@angular/common";
+import {NgForOf, NgIf} from "@angular/common";
 import {MessageContent} from "deep-chat/dist/types/messages";
 import {Thread} from "../../model/thread.model";
 import {ThreadsService} from "../../services/threads.service";
@@ -13,7 +13,8 @@ import {Router} from "@angular/router";
   imports: [
     MatListItem,
     MatNavList,
-    NgForOf
+    NgForOf,
+    NgIf
   ],
   templateUrl: './threads.component.html',
   styleUrl: './threads.component.scss'

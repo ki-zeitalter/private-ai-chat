@@ -1,5 +1,8 @@
 <mat-nav-list>
   <a mat-list-item (click)="newThread()">New chat</a>
   <a mat-list-item *ngFor="let thread of threads"
-     (click)="activateThread(thread)">{{ thread.messages[0].text?.substring(0, 40) + "..." }}</a>
+     (click)="activateThread(thread)">
+    <span *ngIf="thread.thread_name">{{ thread.thread_name }}</span>
+    <span *ngIf="!thread.thread_name">{{ thread.messages[0].text?.substring(0, 40) + "..." }}</span>
+  </a>
 </mat-nav-list>

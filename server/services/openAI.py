@@ -34,7 +34,7 @@ class OpenAI:
             "model": image_settings.get("model", "dall-e-3"),
             "n": 1,
             "size": image_settings.get("size", "1024x1024"),
-            "quality": image_settings.get("quality", "default"),
+            "quality": image_settings.get("quality", "standard"),
             "style": image_settings.get("style", "vivid"),
             "response_format": "b64_json"
         }

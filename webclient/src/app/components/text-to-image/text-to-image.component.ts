@@ -68,7 +68,7 @@ export class TextToImageComponent extends BaseChatComponent {
 
 export class ImageSettings {
   size = "1024x1024";
-  quality = "default";
+  quality = "standard";
   style = "vivid";
 }
 

@@ -7,7 +7,7 @@ class HistoryInMemoryRepository(HistoryRepository):
     def __init__(self):
         self._history = []
 
-    def add_history(self, user_id, thread_id, messages, app_type):
+    def add_history(self, user_id, thread_id, messages, app_type, thread_name=None):
         index_of_existing = self._get_history_index(user_id, thread_id)
 
         if index_of_existing is not None:
@@ -16,6 +16,7 @@ class HistoryInMemoryRepository(HistoryRepository):
         else:
             self._history.append({"user_id": user_id,
                                   "thread_id": thread_id,
+                                  "thread_name": thread_name,
                                   "messages": messages,
                                   "timestamp": datetime.now().isoformat(),
                                   "app_type": app_type})
@@ -34,3 +35,6 @@ class HistoryInMemoryRepository(HistoryRepository):
             if item["user_id"] == user_id and item["thread_id"] == thread_id:
                 return index
         return None
+
+    def is_new_thread(self, user_id, thread_id):
+        return self._get_history_index(user_id, thread_id) is None

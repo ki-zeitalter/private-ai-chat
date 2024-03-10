@@ -16,13 +16,14 @@ class HistorySQLiteRepository(HistoryRepository):
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id TEXT,
                     thread_id TEXT,
+                    thread_name TEXT,
                     messages TEXT,
                     timestamp TEXT,
                     app_type TEXT
                 )
             """)
 
-    def add_history(self, user_id, thread_id, messages, app_type):
+    def add_history(self, user_id, thread_id, messages, app_type, thread_name=None):
         messages_json = json.dumps(messages)
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
@@ -40,15 +41,15 @@ class HistorySQLiteRepository(HistoryRepository):
                 """, (messages_json, datetime.now().isoformat(), history_id))
             else:
                 cursor.execute("""
-                    INSERT INTO history (user_id, thread_id, messages, timestamp, app_type)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (user_id, thread_id, messages_json, datetime.now().isoformat(), app_type))
+                    INSERT INTO history (user_id, thread_id, thread_name, messages, timestamp, app_type)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (user_id, thread_id, thread_name, messages_json, datetime.now().isoformat(), app_type))
 
     def get_history(self, user_id):
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT thread_id, messages, timestamp, app_type
+                SELECT thread_id, thread_name, messages, timestamp, app_type
                 FROM history
                 WHERE user_id = ?
                 ORDER BY timestamp DESC
@@ -57,9 +58,10 @@ class HistorySQLiteRepository(HistoryRepository):
             history = [
                 {
                     "thread_id": row[0],
-                    "messages": json.loads(row[1]),
-                    "timestamp": row[2],
-                    "app_type": row[3]
+                    "thread_name": row[1],
+                    "messages": json.loads(row[2]),
+                    "timestamp": row[3],
+                    "app_type": row[4]
                 }
                 for row in rows
             ]
@@ -78,3 +80,12 @@ class HistorySQLiteRepository(HistoryRepository):
                 return json.loads(result[0])
             else:
                 return None
+
+    def is_new_thread(self, user_id, thread_id):
+        with sqlite3.connect(self._db_file) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT id FROM history
+                WHERE user_id = ? AND thread_id = ?
+            """, (user_id, thread_id))
+            return cursor.fetchone() is None

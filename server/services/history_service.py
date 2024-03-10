@@ -8,6 +8,9 @@ class HistoryService:
     def get_history(self, user_id):
         return self.history_repository.get_history(user_id)
 
-    def add_history(self, user_id, thread_id, messages, app_type):
-        self.history_repository.add_history(user_id, thread_id, messages, app_type)
+    def add_history(self, user_id, thread_id, messages, app_type, thread_name=None):
+        self.history_repository.add_history(user_id, thread_id, messages, app_type, thread_name)
+
+    def is_new_thread(self, user_id, thread_id):
+        return self.history_repository.is_new_thread(user_id, thread_id)
 
