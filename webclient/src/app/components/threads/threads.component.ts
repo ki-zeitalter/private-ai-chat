@@ -2,7 +2,7 @@ import {Component, NgZone, OnInit} from '@angular/core';
 import {MatListItem, MatNavList} from "@angular/material/list";
 import {NgForOf} from "@angular/common";
 import {MessageContent} from "deep-chat/dist/types/messages";
-import {History} from "../../model/history.model";
+import {Thread} from "../../model/thread.model";
 import {ThreadsService} from "../../services/threads.service";
 import {ChatService} from "../../services/chat.service";
 import {Router} from "@angular/router";
@@ -19,7 +19,7 @@ import {Router} from "@angular/router";
   styleUrl: './threads.component.scss'
 })
 export class ThreadsComponent implements OnInit {
-  threads: History[] = []
+  threads: Thread[] = []
 
   constructor(private ngZone: NgZone,
               private threadsService: ThreadsService,
@@ -54,7 +54,7 @@ export class ThreadsComponent implements OnInit {
     })
   }
 
-  activateThread(thread: History) {
+  activateThread(thread: Thread) {
     let target = 'chat'
 
     if (thread.app_type) {

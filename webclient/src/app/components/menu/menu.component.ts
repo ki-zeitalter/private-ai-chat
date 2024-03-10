@@ -16,6 +16,7 @@ import {ChatService} from "../../services/chat.service";
 import {MessageContent} from "deep-chat/dist/types/messages";
 import {Router, RouterOutlet} from "@angular/router";
 import {ThreadsComponent} from "../threads/threads.component";
+import {Thread} from "../../model/thread.model";
 
 @Component({
   selector: 'app-menu',
@@ -69,8 +70,16 @@ export class MenuComponent implements OnInit {
   }
 
   newThread(initialMessages?: MessageContent[]): void {
+    let thread: Thread | null = null;
+
+    if (initialMessages) {
+      thread = {} as Thread
+      thread.messages = initialMessages || [];
+    }
+
+
     this.router.navigate(['chat']).then(() => {
-      this.chatService.activateThread(null)
+      this.chatService.activateThread(thread)
     })
   }
 

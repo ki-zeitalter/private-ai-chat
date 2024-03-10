@@ -1,6 +1,6 @@
 import {MessageContent} from "deep-chat/dist/types/messages";
 
-export interface History {
+export interface Thread {
   user_id: string;
   thread_id: string;
   messages: MessageContent[]

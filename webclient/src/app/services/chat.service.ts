@@ -1,7 +1,8 @@
 import {Injectable} from '@angular/core';
 import {v4 as uuidv4} from "uuid";
 import {BehaviorSubject, Subject} from "rxjs";
-import {History} from "../model/history.model";
+import {Thread} from "../model/thread.model";
+import {MessageContent} from "deep-chat/dist/types/messages";
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ export class ChatService {
   currentThreadId?: string;
 
   //onNewThread = new BehaviorSubject<MessageContent[] | undefined>(undefined);
-  onActivateThread = new BehaviorSubject<History | null>(null);
+  onActivateThread = new BehaviorSubject<Thread | null>(null);
   onNewMessage = new Subject();
 
   constructor() {
@@ -27,9 +28,13 @@ export class ChatService {
   }
 
 
-  public activateThread(thread: History | null): void {
+  public activateThread(thread: Thread | null): void {
     if (thread) {
       const copy = Object.assign({}, thread)
+
+      if (!copy.thread_id) {
+        copy.thread_id = uuidv4();
+      }
 
       this.currentThreadId = copy.thread_id;
       this.onActivateThread.next(copy);
