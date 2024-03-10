@@ -1,4 +1,4 @@
-import {Component, inject, NgZone, OnInit} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {AsyncPipe, NgForOf, NgOptimizedImage} from "@angular/common";
 import {ChatComponent} from "../chat/chat.component";
 import {MatButton, MatIconButton} from "@angular/material/button";
@@ -8,15 +8,14 @@ import {MatIcon} from "@angular/material/icon";
 import {MatListItem, MatNavList} from "@angular/material/list";
 import {MatSidenav, MatSidenavContainer, MatSidenavContent} from "@angular/material/sidenav";
 import {MatToolbar} from "@angular/material/toolbar";
-import {History} from "../../model/history.model";
 import {AICard} from "../../model/ai-card.model";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
 import {Observable} from "rxjs";
 import {map, shareReplay} from "rxjs/operators";
-import {ThreadsService} from "../../services/threads.service";
 import {ChatService} from "../../services/chat.service";
 import {MessageContent} from "deep-chat/dist/types/messages";
 import {Router, RouterOutlet} from "@angular/router";
+import {ThreadsComponent} from "../threads/threads.component";
 
 @Component({
   selector: 'app-menu',
@@ -41,13 +40,14 @@ import {Router, RouterOutlet} from "@angular/router";
     MatToolbar,
     NgForOf,
     RouterOutlet,
-    NgOptimizedImage
+    NgOptimizedImage,
+    ThreadsComponent
   ],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent implements OnInit {
-  threads: History[] = []
+
   aiCards: AICard[] = [];
 
   private breakpointObserver = inject(BreakpointObserver);
@@ -60,53 +60,18 @@ export class MenuComponent implements OnInit {
     );
 
   constructor(
-    private ngZone: NgZone,
-    private threadsService: ThreadsService,
     private chatService: ChatService,
     private router: Router) {
   }
 
   ngOnInit() {
-    this.newThread();
-
-    this.loadThreads();
-
     this.aiCards = this.constructDemoCards();
-
-    this.chatService.onNewMessage.subscribe(() => {
-      this.ngZone.run(() =>
-        window.setTimeout(() => this.loadThreads(), 2000)
-      )
-    });
   }
-
 
   newThread(initialMessages?: MessageContent[]): void {
     this.router.navigate(['chat']).then(() => {
-
       this.chatService.activateThread(null)
     })
-  }
-
-  loadThreads() {
-    this.threadsService.loadThreads(this.chatService.userId).subscribe(history => {
-      console.log('Threads loaded', history)
-      this.threads = history;
-    })
-  }
-
-  activateThread(thread: History) {
-    let target = 'chat'
-
-    if (thread.app_type) {
-      target = thread.app_type;
-    }
-
-
-    this.router.navigate([target]).then(() => {
-      this.chatService.activateThread(thread);
-    })
-
   }
 
   constructDemoCards(): AICard[] {
