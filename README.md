@@ -1,5 +1,5 @@
-# private-ai-chat
-A demo app showing a own Angular AI chat interface with a Python backend.
+# Personal AI chat
+A demo app showing an own Angular AI chat interface with a Python backend.
 
 Features
 - Chat history
