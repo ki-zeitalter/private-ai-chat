@@ -67,12 +67,13 @@ class OpenAI:
     def llm_thread(self, generator, messages):
         try:
             chat = ChatOpenAI(
+                model=os.getenv("OPENAI_MODEL", "gpt-4"),
                 verbose=True,
                 streaming=True,
                 callbacks=[ChainStreamHandler(generator)],
                 temperature=0,
             )
-            # chat([HumanMessage(content=prompt)])
+
             chat(messages=messages)
         finally:
             generator.close()
