@@ -1,5 +1,6 @@
 import queue
 import threading
+from typing import Any
 
 from flask import Response
 import requests
@@ -8,6 +9,7 @@ import os
 
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.outputs import LLMResult
 from langchain_openai import ChatOpenAI
 
 
@@ -64,13 +66,14 @@ class OpenAI:
         # https://deepchat.dev/docs/connect/#Response
         return {"text": result}
 
-    def llm_thread(self, generator, messages):
+    def llm_thread(self, generator, messages, callback):
+
         try:
             chat = ChatOpenAI(
                 model=os.getenv("OPENAI_MODEL", "gpt-4"),
                 verbose=True,
                 streaming=True,
-                callbacks=[ChainStreamHandler(generator)],
+                callbacks=[ChainStreamHandler(generator, callback)],
                 temperature=0,
             )
 
@@ -78,9 +81,9 @@ class OpenAI:
         finally:
             generator.close()
 
-    def chain(self, prompt):
+    def chain(self, prompt, callback):
         generator = ThreadedGenerator()
-        threading.Thread(target=self.llm_thread, args=(generator, prompt)).start()
+        threading.Thread(target=self.llm_thread, args=(generator, prompt, callback)).start()
         return generator
 
     def convert_messages_to_langchain_format(self, messages):
@@ -96,7 +99,8 @@ class OpenAI:
         return lc_messages
 
     def chat_stream(self, messages, callback):
-        return Response(self.chain(self.convert_messages_to_langchain_format(messages)), mimetype='text/event-stream')
+        return Response(self.chain(self.convert_messages_to_langchain_format(messages), callback),
+                        mimetype='text/event-stream')
 
     def text_to_image(self, messages, image_settings):
         headers = {
@@ -163,9 +167,13 @@ class ThreadedGenerator:
 
 
 class ChainStreamHandler(StreamingStdOutCallbackHandler):
-    def __init__(self, gen):
+    def __init__(self, gen, callback):
         super().__init__()
         self.gen = gen
+        self.callback = callback
 
     def on_llm_new_token(self, token: str, **kwargs):
         self.gen.send("data: {}\n\n".format(json.dumps({"text": token})))
+
+    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> None:
+        self.callback(response.generations[-1][-1].text)
