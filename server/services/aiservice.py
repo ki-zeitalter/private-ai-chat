@@ -25,6 +25,9 @@ class AIService:
     def chat_stream(self, body, user_id, thread_id):
         # Save the message to the history
         messages = body["messages"]
+
+        #self.ensure_system_prompt(messages)
+
         self.history_service.add_history(user_id, thread_id, messages, 'chat')
 
         def callback(response):
@@ -32,6 +35,12 @@ class AIService:
             self.history_service.add_history(user_id, thread_id, messages, 'chat')
 
         return self.model_service.chat_stream(messages, callback)
+
+    def ensure_system_prompt(self, messages):
+        if not self._system_prompt_included(messages):
+            with open('settings/default_chat_system_prompt.txt', 'r') as file:
+                system_prompt = file.read()
+            messages.insert(0, {'role': 'system', 'text': system_prompt})
 
     def text_to_image(self, body, user_id, thread_id):
         messages = body["messages"]
@@ -51,3 +60,6 @@ class AIService:
         # Sends response back to Deep Chat using the Response format:
         # https://deepchat.dev/docs/connect/#Response
         return {"text": "This is a response from a Flask server. Thankyou for your message!"}
+
+    def _system_prompt_included(self, messages):
+        return any(message['role'] == 'system' for message in messages)
