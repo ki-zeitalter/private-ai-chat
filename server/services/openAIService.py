@@ -1,22 +1,23 @@
-import queue
-import threading
-from typing import Any
-
-from flask import Response
-import requests
 import json
 import os
+import queue
+import threading
+import time
+from typing import Any
 
+import requests
+from flask import Response
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.outputs import LLMResult
 from langchain_openai import ChatOpenAI
+from openai import OpenAI
 
 
 # Make sure to set the OPENAI_API_KEY environment variable in a .env file
 # (create if it does not exist) - see .env.example
 
-class OpenAI:
+class OpenAIService:
     @staticmethod
     def create_chat_body(messages, stream=False):
         # Text messages are stored inside request body using the Deep Chat JSON format:
@@ -124,6 +125,49 @@ class OpenAI:
         # Sends response back to Deep Chat using the Response format:
         # https://deepchat.dev/docs/connect/#Response
         return {"files": [{"type": "image", "src": "data:image/png;base64," + result}]}
+
+    def code_interpreter(self, messages):
+        client = OpenAI()
+        assistant = client.beta.assistants.create(
+            instructions="You are a personal math tutor. When asked a math question, write and run code "
+                         "to answer the question.",
+            model="gpt-4-turbo-preview",
+            tools=[{"type": "code_interpreter"}]
+        )
+
+        thread = client.beta.threads.create()
+
+        message = client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content="I need to solve the equation `3x + 11 = 14`. Can you help me?",
+        )
+
+        run = client.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=assistant.id,
+            instructions="Please address the user as Jane Doe. The user has a premium account.",
+        )
+
+        print("checking assistant status. ")
+        while True:
+            run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
+
+            if run.status == "completed":
+                print("done!")
+                messages = client.beta.threads.messages.list(thread_id=thread.id)
+
+                print("messages: ")
+                for message in messages:
+                    assert message.content[0].type == "text"
+                    print({"role": message.role, "message": message.content[0].text.value})
+
+                client.beta.assistants.delete(assistant.id)
+
+                break
+            else:
+                print("in progress...")
+                time.sleep(5)
 
     # By default - the OpenAI API will accept 1024x1024 png images, however other dimensions/formats can sometimes work by default
     # You can use an example image here: https://github.com/OvidijusParsiunas/deep-chat/blob/main/example-servers/ui/assets/example-image.png

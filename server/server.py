@@ -8,7 +8,7 @@ from services.aiservice import AIService
 from services.history_inmemory_repository import HistoryInMemoryRepository
 from services.history_service import HistoryService
 from services.history_sqlite_repository import HistorySQLiteRepository
-from services.openAI import OpenAI
+from services.openAIService import OpenAIService
 
 # ------------------ SETUP ------------------
 
@@ -25,7 +25,7 @@ history_sqlite = HistorySQLiteRepository('history.db')
 
 history_service = HistoryService(history_sqlite)
 
-openai_service = OpenAI()
+openai_service = OpenAIService()
 
 ai_service = AIService(history_service, openai_service)
 
@@ -92,6 +92,10 @@ def text_to_image():
 def files():
     return ai_service.files(request)
 
+
+@app.route("/interpreter", methods=["GET"])
+def interpreter():
+    return openai_service.code_interpreter([])
 
 @app.route("/history", methods=["GET"])
 def history():
