@@ -79,8 +79,8 @@ class AIService:
         print(files)
 
         # return "data: {}\n\n".format(json.dumps({"text": "The response from the interpreter."}))
-        return {'text': 'interpreter response'}
-        # return self.model_service.code_interpreter(messages, files)
+        # return {'text': 'interpreter response'}
+        return self.model_service.code_interpreter(messages, files)
 
     def _generate_thread_name(self, question):
         messages = [

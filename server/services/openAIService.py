@@ -128,11 +128,24 @@ class OpenAIService:
 
     def code_interpreter(self, messages, files):
         client = OpenAI()
+
+        file_ids = []
+
+        if files:
+            for requestFile in files:
+                file = client.files.create(
+                    file=requestFile.read(),
+                    purpose='assistants'
+                )
+                print(file)
+                file_ids.append(file.id)
+
         assistant = client.beta.assistants.create(
-            instructions="You are a personal math tutor. When asked a math question, write and run code "
+            instructions="You are a data analyst. When needed, write and run code "
                          "to answer the question.",
             model="gpt-4-turbo-preview",
-            tools=[{"type": "code_interpreter"}]
+            tools=[{"type": "code_interpreter"}],
+            file_ids=file_ids
         )
 
         thread = client.beta.threads.create()
@@ -140,55 +153,46 @@ class OpenAIService:
         message = client.beta.threads.messages.create(
             thread_id=thread.id,
             role="user",
-            content="I need to solve the equation `3x + 11 = 14`. Can you help me?",
+            content=messages[-1]["text"],
+            file_ids=file_ids
         )
 
         run = client.beta.threads.runs.create(
             thread_id=thread.id,
             assistant_id=assistant.id,
-            instructions="Please address the user as Jane Doe. The user has a premium account.",
+            # instructions="Please address the user as Jane Doe. The user has a premium account.",
         )
 
         print("checking assistant status. ")
+        max_iterations = 20
+        iteration_count = 0
         while True:
             run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
 
             if run.status == "completed":
                 print("done!")
-                messages = client.beta.threads.messages.list(thread_id=thread.id)
+                messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
 
-                print("messages: ")
+                response_text = ""
                 for message in messages:
                     assert message.content[0].type == "text"
                     print({"role": message.role, "message": message.content[0].text.value})
 
+                    if message.role == "assistant":
+                        response_text += message.content[0].text.value + "\n\n"
+
                 client.beta.assistants.delete(assistant.id)
 
-                return {"text": messages[0].content[0].text.value}
+                return {"text": response_text}
             else:
-                print("in progress...")
+                print("in progress...", run.status)
                 time.sleep(5)
 
-    # By default - the OpenAI API will accept 1024x1024 png images, however other dimensions/formats can sometimes work by default
-    # You can use an example image here: https://github.com/OvidijusParsiunas/deep-chat/blob/main/example-servers/ui/assets/example-image.png
-    def image_variation(self, files):
-        url = "https://api.openai.com/v1/images/variations"
-        headers = {
-            "Authorization": "Bearer " + os.getenv("OPENAI_API_KEY")
-        }
-        # Files are stored inside a files object
-        # https://deepchat.dev/docs/connect
-        image_file = files[0]
-        form = {
-            "image": (image_file.filename, image_file.read(), image_file.mimetype)
-        }
-        response = requests.post(url, files=form, headers=headers)
-        json_response = response.json()
-        if "error" in json_response:
-            raise Exception(json_response["error"]["message"])
-        # Sends response back to Deep Chat using the Response format:
-        # https://deepchat.dev/docs/connect/#Response
-        return {"files": [{"type": "image", "src": json_response["data"][0]["url"]}]}
+            iteration_count += 1
+            if iteration_count >= max_iterations:
+                print("max iterations reached")
+                break
+        return {'text': 'The request is still in progress. Please check back later.'}
 
 
 class ThreadedGenerator:
