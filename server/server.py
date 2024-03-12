@@ -1,3 +1,5 @@
+import json
+
 from requests.exceptions import ConnectionError
 from flask import Flask, request
 from dotenv import load_dotenv
@@ -88,14 +90,18 @@ def text_to_image():
     return ai_service.text_to_image(body, user_id, thread_id)
 
 
-@app.route("/files", methods=["POST"])
-def files():
-    return ai_service.files(request)
-
-
-@app.route("/interpreter", methods=["GET"])
+@app.route("/interpreter", methods=["POST"])
 def interpreter():
-    return openai_service.code_interpreter([])
+    user_id = request.headers.get('User-Id')
+    if user_id is None:
+        return {"error": "User-Id header is required"}, 400
+
+    thread_id = request.headers.get('Thread-Id')
+    if thread_id is None:
+        return {"error": "Thread-Id header is required"}, 400
+
+    return ai_service.interpreter(request)
+
 
 @app.route("/history", methods=["GET"])
 def history():

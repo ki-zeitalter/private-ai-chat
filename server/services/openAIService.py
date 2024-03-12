@@ -126,7 +126,7 @@ class OpenAIService:
         # https://deepchat.dev/docs/connect/#Response
         return {"files": [{"type": "image", "src": "data:image/png;base64," + result}]}
 
-    def code_interpreter(self, messages):
+    def code_interpreter(self, messages, files):
         client = OpenAI()
         assistant = client.beta.assistants.create(
             instructions="You are a personal math tutor. When asked a math question, write and run code "
@@ -164,7 +164,7 @@ class OpenAIService:
 
                 client.beta.assistants.delete(assistant.id)
 
-                break
+                return {"text": messages[0].content[0].text.value}
             else:
                 print("in progress...")
                 time.sleep(5)

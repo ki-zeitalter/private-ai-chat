@@ -1,3 +1,6 @@
+import json
+
+
 class AIService:
 
     def __init__(self, history_service, model_service):
@@ -10,7 +13,6 @@ class AIService:
 
         # Sends response back to Deep Chat using the Response format:
         # https://deepchat.dev/docs/connect/#Response
-
 
         # Save the message to the history
         messages = body["messages"]
@@ -61,13 +63,24 @@ class AIService:
 
         return result
 
-    def files(self, request):
-        # Files are stored inside a files object
-        # https://deepchat.dev/docs/connect
+    def interpreter(self, request):
+        files = request.files.getlist("files")
+        messages = []
 
-        # Sends response back to Deep Chat using the Response format:
-        # https://deepchat.dev/docs/connect/#Response
-        return {"text": "This is a response from a Flask server. Thankyou for your message!"}
+        if files:
+            text_messages = list(request.form.items())
+            if len(text_messages) > 0:
+                for key, value in text_messages:
+                    messages.append(json.loads(value))
+        else:
+            messages = request.json["messages"]
+
+        print(messages)
+        print(files)
+
+        # return "data: {}\n\n".format(json.dumps({"text": "The response from the interpreter."}))
+        return {'text': 'interpreter response'}
+        # return self.model_service.code_interpreter(messages, files)
 
     def _generate_thread_name(self, question):
         messages = [

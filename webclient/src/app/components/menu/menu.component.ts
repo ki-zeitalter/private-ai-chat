@@ -121,6 +121,17 @@ export class MenuComponent implements OnInit {
       }
     })
 
+    result.push({
+      name: 'Analyze files',
+      description: 'Analyze files like CSV, Excel, PDF, etc.',
+      icon: '',
+      action: () => {
+        this.router.navigate(['analyzer']).then(() =>
+          this.chatService.activateThread(null)
+        )
+      }
+    })
+
     return result;
   }
 }
