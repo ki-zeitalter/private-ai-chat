@@ -38,3 +38,7 @@ class HistoryInMemoryRepository(HistoryRepository):
 
     def is_new_thread(self, user_id, thread_id):
         return self._get_history_index(user_id, thread_id) is None
+
+    def delete_thread(self, thread_id):
+        self._history = [item for item in self._history if item["thread_id"] != thread_id]
+        return True

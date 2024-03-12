@@ -16,4 +16,8 @@ export class ThreadsService {
 
     return this.httpClient.get<Thread[]>("http://localhost:8080/history", {headers})
   }
+
+  deleteThread(thread_id: string): Observable<any> {
+    return this.httpClient.delete<any>("http://localhost:8080/history/" + thread_id)
+  }
 }

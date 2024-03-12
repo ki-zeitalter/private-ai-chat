@@ -14,3 +14,6 @@ class HistoryService:
     def is_new_thread(self, user_id, thread_id):
         return self.history_repository.is_new_thread(user_id, thread_id)
 
+    def delete_history(self, thread_id):
+        return self.history_repository.delete_thread(thread_id)
+

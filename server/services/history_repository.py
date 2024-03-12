@@ -27,3 +27,7 @@ class HistoryRepository(ABC):
     @abstractmethod
     def is_new_thread(self, user_id: str, thread_id: str) -> bool:
         pass
+
+    @abstractmethod
+    def delete_thread(self, thread_id) -> bool:
+        pass

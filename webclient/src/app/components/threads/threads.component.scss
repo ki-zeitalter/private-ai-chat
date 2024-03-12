@@ -1,0 +1,29 @@
+.smaller-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  position:relative;
+}
+
+.thread-link {
+  flex-grow: 1;
+}
+
+
+.delete-button {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.list-item:hover .delete-button {
+  opacity: 1;
+}

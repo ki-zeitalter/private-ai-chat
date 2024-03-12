@@ -111,6 +111,15 @@ def history():
     return history_service.get_history(user_id)
 
 
+@app.route("/history/<thread_id>", methods=["DELETE"])
+def delete_history(thread_id):
+    result = history_service.delete_history(thread_id)
+    if result:
+        return {"message": "History entry deleted successfully"}, 200
+    else:
+        return {"error": "History entry not found"}, 404
+
+
 # ------------------ START SERVER ------------------
 
 if __name__ == "__main__":

@@ -67,6 +67,15 @@ class HistorySQLiteRepository(HistoryRepository):
             ]
             return history
 
+    def delete_thread(self, thread_id):
+        conn = sqlite3.connect(self._db_file)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM history WHERE thread_id = ?", (thread_id,))
+        conn.commit()
+        rows_affected = cursor.rowcount
+        conn.close()
+        return rows_affected > 0
+
     def get_history_thread(self, user_id, thread_id):
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
