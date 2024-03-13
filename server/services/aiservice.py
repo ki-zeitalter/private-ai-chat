@@ -63,7 +63,7 @@ class AIService:
 
         return result
 
-    def interpreter(self, request):
+    def interpreter(self, request, user_id, thread_id):
         files = request.files.getlist("files")
         messages = []
 
@@ -78,9 +78,15 @@ class AIService:
         print(messages)
         print(files)
 
-        # return "data: {}\n\n".format(json.dumps({"text": "The response from the interpreter."}))
-        # return {'text': 'interpreter response'}
-        return self.model_service.code_interpreter(messages, files)
+        thread_name = self.ensure_thread_name(messages, user_id, thread_id)
+
+        self.history_service.add_history(user_id, thread_id, messages, 'analyzer', thread_name=thread_name)
+
+        result = self.model_service.code_interpreter(messages, files, thread_id)
+        messages.append({'role': 'ai', 'text': result['text']})
+        self.history_service.add_history(user_id, thread_id, messages, 'chat')
+
+        return result
 
     def _generate_thread_name(self, question):
         messages = [

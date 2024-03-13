@@ -92,15 +92,15 @@ def text_to_image():
 
 @app.route("/interpreter", methods=["POST"])
 def interpreter():
-    # user_id = request.headers.get('User-Id')
-    # if user_id is None:
-    #     return {"error": "User-Id header is required"}, 400
-    #
-    # thread_id = request.headers.get('Thread-Id')
-    # if thread_id is None:
-    #     return {"error": "Thread-Id header is required"}, 400
+    user_id = request.headers.get('User-Id')
+    if user_id is None:
+        return {"error": "User-Id header is required"}, 400
 
-    return ai_service.interpreter(request)
+    thread_id = request.headers.get('Thread-Id')
+    if thread_id is None:
+        return {"error": "Thread-Id header is required"}, 400
+
+    return ai_service.interpreter(request, user_id, thread_id)
 
 
 @app.route("/history", methods=["GET"])

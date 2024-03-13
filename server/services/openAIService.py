@@ -12,6 +12,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.outputs import LLMResult
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
+import sqlite3
 
 
 # Make sure to set the OPENAI_API_KEY environment variable in a .env file
@@ -126,10 +127,19 @@ class OpenAIService:
         # https://deepchat.dev/docs/connect/#Response
         return {"files": [{"type": "image", "src": "data:image/png;base64," + result}]}
 
-    def code_interpreter(self, messages, files):
+    def code_interpreter(self, messages, files, thread_id):
         client = OpenAI()
 
-        file_ids = []
+        thread_data = self.load_thread_data(thread_id)
+
+        if thread_data is not None:
+            file_ids = thread_data['file_ids']
+            thread_id_openai = thread_data['thread_id_openai']
+            assistant_id = thread_data['assistant_id']
+            # Verwenden Sie die geladenen Daten
+        else:
+            # Ihr vorhandener Code zum Erstellen und Speichern der Daten
+            file_ids = []
 
         if files:
             for requestFile in files:
@@ -140,15 +150,21 @@ class OpenAIService:
                 print(file)
                 file_ids.append(file.id)
 
-        assistant = client.beta.assistants.create(
-            instructions="You are a data analyst. When needed, write and run code "
-                         "to answer the question.",
-            model="gpt-4-turbo-preview",
-            tools=[{"type": "code_interpreter"}],
-            file_ids=file_ids
-        )
+        if thread_data is None:
+            print("creating assistant")
+            assistant = client.beta.assistants.create(
+                instructions="You are a data analyst. When needed, write and run code "
+                             "to answer the question.",
+                model="gpt-4-turbo-preview",
+                tools=[{"type": "code_interpreter"}],
+                file_ids=file_ids
+            )
 
-        thread = client.beta.threads.create()
+            thread = client.beta.threads.create()
+        else:
+            print("retrieving assistant")
+            assistant = client.beta.assistants.retrieve(thread_data['assistant_id'])
+            thread = client.beta.threads.retrieve(thread_data['thread_id_openai'])
 
         message = client.beta.threads.messages.create(
             thread_id=thread.id,
@@ -162,6 +178,8 @@ class OpenAIService:
             assistant_id=assistant.id,
             # instructions="Please address the user as Jane Doe. The user has a premium account.",
         )
+
+        self.store_thread_data(thread_id, file_ids, thread.id, assistant.id)
 
         print("checking assistant status. ")
         max_iterations = 20
@@ -181,7 +199,7 @@ class OpenAIService:
                     if message.role == "assistant":
                         response_text += message.content[0].text.value + "\n\n"
 
-                client.beta.assistants.delete(assistant.id)
+                # client.beta.assistants.delete(assistant.id)
 
                 return {"text": response_text}
             else:
@@ -193,6 +211,55 @@ class OpenAIService:
                 print("max iterations reached")
                 break
         return {'text': 'The request is still in progress. Please check back later.'}
+
+    def get_connection(self):
+        conn = sqlite3.connect('openai_data.db')
+        c = conn.cursor()
+
+        c.execute('''
+                    CREATE TABLE IF NOT EXISTS ThreadData (
+                        thread_id TEXT PRIMARY KEY,
+                        file_ids TEXT,
+                        thread_id_openai TEXT,
+                        assistant_id TEXT
+                    )
+                ''')
+        return conn
+
+    def load_thread_data(self, thread_id):
+        conn = self.get_connection()
+        c = conn.cursor()
+
+        c.execute('SELECT * FROM ThreadData WHERE thread_id = ?', (thread_id,))
+        data = c.fetchone()
+
+        conn.close()
+
+        if data is None:
+            return None
+
+        thread_data = {
+            'thread_id': data[0],
+            'file_ids': data[1].split(','),
+            'thread_id_openai': data[2],
+            'assistant_id': data[3]
+        }
+
+        return thread_data
+
+    def store_thread_data(self, thread_id, file_ids, thread_id_openai, assistant_id):
+
+        conn = self.get_connection()
+
+        c = conn.cursor()
+        file_ids_str = ','.join(file_ids)
+        c.execute('''
+                INSERT OR REPLACE INTO ThreadData (thread_id, file_ids, thread_id_openai, assistant_id)
+                VALUES (?, ?, ?, ?)
+            ''', (thread_id, file_ids_str, thread_id_openai, assistant_id))
+        conn.commit()
+
+        conn.close()
 
 
 class ThreadedGenerator:

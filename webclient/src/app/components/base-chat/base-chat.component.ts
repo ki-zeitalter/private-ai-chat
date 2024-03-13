@@ -50,12 +50,15 @@ export abstract class BaseChatComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   protected requestInterceptor(requestDetails: RequestDetails): RequestDetails {
-    if (requestDetails.headers) {
-      requestDetails.headers['User-Id'] = this.chatService.userId;
 
-      if (this.chatService.currentThreadId)
-        requestDetails.headers['Thread-Id'] = this.chatService.currentThreadId;
-    }
+    if (!requestDetails.headers) requestDetails.headers = {};
+
+
+    requestDetails.headers['User-Id'] = this.chatService.userId;
+
+    if (this.chatService.currentThreadId)
+      requestDetails.headers['Thread-Id'] = this.chatService.currentThreadId;
+    
 
     return requestDetails;
   }
