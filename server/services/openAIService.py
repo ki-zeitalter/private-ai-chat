@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import queue
@@ -168,8 +169,8 @@ class OpenAIService:
 
         self.store_thread_data(thread_id, file_ids, thread.id, assistant.id)
 
-        max_iterations = 20
-        iteration_count = 0
+        existing_messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
+        existing_message_ids = [message.id for message in existing_messages]
 
         while run.status in ['queued', 'in_progress', 'cancelling']:
             time.sleep(1)
@@ -179,20 +180,34 @@ class OpenAIService:
             )
 
         if run.status == "completed":
-            print("done!")
+
             messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
 
             # FIXME: This is a temporary solution to get the response text
             response_text = ""
+            generated_file = None
             for message in messages:
-                if message.content[0].type == "text":
-                    print({"role": message.role, "message": message.content[0].text.value})
 
-                    if message.role == "assistant":
-                        response_text += message.content[0].text.value + "\n\n"
-                else:
-                    print("Other type of message", message.content[0].type)
-                    print(message.content[0])
+                if message.id in existing_message_ids:
+                    continue
+
+                for content in message.content:
+                    if content.type == "text":
+                        if message.role == "assistant":
+                            response_text += content.text.value + "\n\n"
+                    elif content.type == "image_file":
+                        print("Image file")  # MessageContentImageFile
+
+                        image_data = client.files.content(content.image_file.file_id)
+                        image_data_bytes = image_data.read()
+                        generated_file = base64.b64encode(image_data_bytes).decode()
+                    else:
+                        print("Other type of message", content.type)
+                        print(message.content[0])
+
+            if generated_file is not None:
+                return {"text": response_text,
+                        "files": [{"type": "image", "src": "data:image/png;base64," + generated_file}]}
 
             return {"text": response_text}
         else:
