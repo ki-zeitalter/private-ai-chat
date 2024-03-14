@@ -3,6 +3,7 @@ import os
 import queue
 import threading
 import time
+from io import BufferedReader
 from typing import Any
 
 import requests
@@ -132,38 +133,25 @@ class OpenAIService:
 
         thread_data = self.load_thread_data(thread_id)
 
+        assistant = self.get_assistant()
+
         if thread_data is not None:
             file_ids = thread_data['file_ids']
-            thread_id_openai = thread_data['thread_id_openai']
-            assistant_id = thread_data['assistant_id']
-            # Verwenden Sie die geladenen Daten
         else:
-            # Ihr vorhandener Code zum Erstellen und Speichern der Daten
             file_ids = []
 
         if files:
             for requestFile in files:
+                fileReader = BufferedReader(requestFile)
                 file = client.files.create(
-                    file=requestFile.read(),
+                    file=(requestFile.filename, fileReader),
                     purpose='assistants'
                 )
-                print(file)
                 file_ids.append(file.id)
 
         if thread_data is None:
-            print("creating assistant")
-            assistant = client.beta.assistants.create(
-                instructions="You are a data analyst. When needed, write and run code "
-                             "to answer the question.",
-                model="gpt-4-turbo-preview",
-                tools=[{"type": "code_interpreter"}],
-                file_ids=file_ids
-            )
-
             thread = client.beta.threads.create()
         else:
-            print("retrieving assistant")
-            assistant = client.beta.assistants.retrieve(thread_data['assistant_id'])
             thread = client.beta.threads.retrieve(thread_data['thread_id_openai'])
 
         message = client.beta.threads.messages.create(
@@ -176,41 +164,60 @@ class OpenAIService:
         run = client.beta.threads.runs.create(
             thread_id=thread.id,
             assistant_id=assistant.id,
-            # instructions="Please address the user as Jane Doe. The user has a premium account.",
         )
 
         self.store_thread_data(thread_id, file_ids, thread.id, assistant.id)
 
-        print("checking assistant status. ")
         max_iterations = 20
         iteration_count = 0
-        while True:
-            run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
 
-            if run.status == "completed":
-                print("done!")
-                messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
+        while run.status in ['queued', 'in_progress', 'cancelling']:
+            time.sleep(1)
+            run = client.beta.threads.runs.retrieve(
+                thread_id=thread.id,
+                run_id=run.id
+            )
 
-                response_text = ""
-                for message in messages:
-                    assert message.content[0].type == "text"
+        if run.status == "completed":
+            print("done!")
+            messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
+
+            # FIXME: This is a temporary solution to get the response text
+            response_text = ""
+            for message in messages:
+                if message.content[0].type == "text":
                     print({"role": message.role, "message": message.content[0].text.value})
 
                     if message.role == "assistant":
                         response_text += message.content[0].text.value + "\n\n"
+                else:
+                    print("Other type of message", message.content[0].type)
+                    print(message.content[0])
 
-                # client.beta.assistants.delete(assistant.id)
+            return {"text": response_text}
+        else:
+            print("Status is not completed...", run.status)
 
-                return {"text": response_text}
-            else:
-                print("in progress...", run.status)
-                time.sleep(5)
+        return {'text': 'Something went wrong... sorry!.'}
 
-            iteration_count += 1
-            if iteration_count >= max_iterations:
-                print("max iterations reached")
-                break
-        return {'text': 'The request is still in progress. Please check back later.'}
+    def get_assistant(self):
+        client = OpenAI()
+
+        assistants = client.beta.assistants.list()
+
+        for assistant in assistants:
+            print(assistant.id, assistant.name, assistant.instructions, assistant.model, assistant.tools)
+            if assistant.name == "Data Analyst":
+                return client.beta.assistants.retrieve(assistant.id)
+
+        assistant = client.beta.assistants.create(
+            name="Data Analyst",
+            instructions="You are a data analyst. When needed, write and run code "
+                         "to answer the question.",
+            model="gpt-4-turbo-preview",
+            tools=[{"type": "code_interpreter"}],
+        )
+        return assistant
 
     def get_connection(self):
         conn = sqlite3.connect('openai_data.db')
