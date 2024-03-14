@@ -203,7 +203,7 @@ class OpenAIService:
                         generated_file = base64.b64encode(image_data_bytes).decode()
                     else:
                         print("Other type of message", content.type)
-                        print(message.content[0])
+                        print(message.content[0]) # TODO: Handle other types of messages
 
             if generated_file is not None:
                 return {"text": response_text,

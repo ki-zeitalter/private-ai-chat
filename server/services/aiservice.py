@@ -84,6 +84,10 @@ class AIService:
 
         result = self.model_service.code_interpreter(messages, files, thread_id)
         messages.append({'role': 'ai', 'text': result['text']})
+
+        if result['files']:
+            messages.append({'role': 'ai', 'files': result['files']})
+
         self.history_service.add_history(user_id, thread_id, messages, 'chat')
 
         return result
