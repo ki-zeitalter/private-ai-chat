@@ -58,7 +58,7 @@ export abstract class BaseChatComponent implements OnInit, OnDestroy, AfterViewI
 
     if (this.chatService.currentThreadId)
       requestDetails.headers['Thread-Id'] = this.chatService.currentThreadId;
-    
+
 
     return requestDetails;
   }

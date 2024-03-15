@@ -183,9 +183,8 @@ class OpenAIService:
 
             messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
 
-            # FIXME: This is a temporary solution to get the response text
             response_text = ""
-            generated_file = None
+            generated_file = None # TODO: multiple files
             for message in messages:
 
                 if message.id in existing_message_ids:
@@ -203,7 +202,7 @@ class OpenAIService:
                         generated_file = base64.b64encode(image_data_bytes).decode()
                     else:
                         print("Other type of message", content.type)
-                        print(message.content[0]) # TODO: Handle other types of messages
+                        print(message.content[0])  # TODO: Handle other types of messages
 
             if generated_file is not None:
                 return {"text": response_text,
