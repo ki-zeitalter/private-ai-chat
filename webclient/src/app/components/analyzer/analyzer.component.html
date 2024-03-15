@@ -71,8 +71,7 @@
 
            textInput='{"placeholder": {"text": "Your message..."}}'
 
-
-           [request]="{'url': 'http://localhost:8080/interpreter'}"
+           [request]="{'url': environment.baseServerUrl + '/interpreter'}"
            requestBodyLimits='{
                   "maxMessages": 0
                }'

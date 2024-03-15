@@ -72,7 +72,7 @@
            textInput='{"placeholder": {"text": "Your message..."}}'
 
 
-           [request]="{'url': 'http://localhost:8080/chat-stream'}"
+           [request]="{'url': environment.baseServerUrl + '/chat-stream'}"
            requestBodyLimits='{
                   "maxMessages": 0
                }'

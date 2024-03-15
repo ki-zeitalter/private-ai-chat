@@ -3,6 +3,7 @@ import {BaseChatComponent} from "../base-chat/base-chat.component";
 import {ChatService} from "../../services/chat.service";
 import {HighlightModule} from "ngx-highlightjs";
 import {CommonModule} from "@angular/common";
+import {environment} from "../../../environments/environment";
 
 @Component({
   selector: 'app-analyzer',
@@ -19,4 +20,6 @@ export class AnalyzerComponent extends BaseChatComponent {
   constructor(private _chatService: ChatService) {
     super(_chatService)
   }
+
+  protected readonly environment = environment;
 }

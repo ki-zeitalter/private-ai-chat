@@ -8,6 +8,7 @@ import {ChatService} from "../../services/chat.service";
 import {Router} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
 import {MatButton, MatIconButton} from "@angular/material/button";
+import { environment } from './../../../environments/environment';
 import {
   MAT_DIALOG_DATA,
   MatDialog,

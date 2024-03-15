@@ -21,6 +21,7 @@ import {FormsModule} from "@angular/forms";
 import {MatOption, MatSelect} from "@angular/material/select";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
 import {RequestDetails} from "deep-chat/dist/types/interceptors";
+import {environment} from "../../../environments/environment";
 
 @Component({
   selector: 'app-text-to-image',
@@ -64,6 +65,7 @@ export class TextToImageComponent extends BaseChatComponent {
     });
   }
 
+    protected readonly environment = environment;
 }
 
 export class ImageSettings {

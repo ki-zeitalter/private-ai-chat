@@ -5,6 +5,7 @@ import {CommonModule} from "@angular/common";
 import 'deep-chat'
 import {ChatService} from "../../services/chat.service";
 import {BaseChatComponent} from "../base-chat/base-chat.component";
+import {environment} from "../../../environments/environment";
 
 @Component({
   selector: 'app-chat',
@@ -21,4 +22,6 @@ export class ChatComponent extends BaseChatComponent {
   constructor(private _chatService: ChatService) {
     super(_chatService)
   }
+
+  protected readonly environment = environment;
 }

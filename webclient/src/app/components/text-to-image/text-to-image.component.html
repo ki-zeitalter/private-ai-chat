@@ -71,8 +71,7 @@
 
            textInput='{"placeholder": {"text": "Describe the image..."}}'
 
-
-           [request]="{'url': 'http://localhost:8080/text-to-image'}"
+           [request]="{'url': environment.baseServerUrl + '/text-to-image'}"
            requestBodyLimits='{
                   "maxMessages": 0
                }'
