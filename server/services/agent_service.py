@@ -1,10 +1,11 @@
 from typing import List
 
 from services.agent import Agent
+from services.agent_repository import AgentRepository
 
 
 class AgentService:
-    def __init__(self, agent_repository):
+    def __init__(self, agent_repository: AgentRepository):
         self.agent_repository = agent_repository
 
     def get_agents(self) -> List[Agent]:
@@ -21,3 +22,6 @@ class AgentService:
 
     def delete_agent(self, agent_id) -> None:
         return self.agent_repository.delete_agent(agent_id)
+
+    def get_agent_by_name(self, agent_name) -> Agent | None:
+        return self.agent_repository.get_agent_by_name(agent_name)

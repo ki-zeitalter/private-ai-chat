@@ -32,7 +32,7 @@ history_sqlite = HistorySQLiteRepository('history.db')
 
 history_service = HistoryService(history_sqlite)
 
-openai_service = OpenAIService()
+openai_service = OpenAIService(agent_service)
 
 ai_service = AIService(history_service, openai_service)
 
@@ -105,7 +105,8 @@ def interpreter():
     if thread_id is None:
         return {"error": "Thread-Id header is required"}, 400
 
-    return ai_service.interpreter(request, user_id, thread_id)
+    result = ai_service.interpreter(request, user_id, thread_id)
+    return result
 
 
 @app.route("/history", methods=["GET"])

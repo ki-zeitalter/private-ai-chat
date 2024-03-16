@@ -1,6 +1,6 @@
 import uuid
 
-from services.agent import Agent, AgentCreator
+from services.agent import Agent
 from services.agent_service import AgentService
 
 
@@ -21,7 +21,7 @@ def ensure_agents_are_predefined(agent_service: AgentService):
         agent_service.create_agent(Agent(
             agent_id=str(uuid.uuid4()),
             name="Data Analyst",
-            creator=AgentCreator.AUTOMATED,
+            creator="AUTOMATED",
             instructions="You are a data analyst. When needed, write and run code "
                          "to answer the question.",
             tools=[{"type": "code_interpreter"}]

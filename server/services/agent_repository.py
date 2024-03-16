@@ -25,3 +25,7 @@ class AgentRepository(ABC):
     @abstractmethod
     def delete_agent(self, agent_id: str) -> None:
         pass
+
+    @abstractmethod
+    def get_agent_by_name(self, agent_name):
+        pass

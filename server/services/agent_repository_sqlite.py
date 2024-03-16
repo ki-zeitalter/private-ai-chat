@@ -70,7 +70,7 @@ class AgentRepositorySqlite(AgentRepository):
             """, (
                 agent.agent_id,
                 agent.name,
-                agent.creator.name,
+                agent.creator,
                 agent.instructions,
                 json.dumps(agent.tools),
                 agent.provider_id,
@@ -86,7 +86,7 @@ class AgentRepositorySqlite(AgentRepository):
                 WHERE agent_id = ?
             """, (
                 agent.name,
-                agent.creator.name,
+                agent.creator,
                 agent.instructions,
                 json.dumps(agent.tools),
                 agent.provider_id,
@@ -101,3 +101,22 @@ class AgentRepositorySqlite(AgentRepository):
                 DELETE FROM agent
                 WHERE agent_id = ?
             """, (agent_id,))
+
+    def get_agent_by_name(self, agent_name):
+        with sqlite3.connect(self._db_file) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT agent_id, name, creator, instructions, tools, provider_id, provider_name
+                FROM agent
+                WHERE name = ?
+            """, (agent_name,))
+            row = cursor.fetchone()
+            if row:
+                return Agent(agent_id=row[0],
+                             name=row[1],
+                             creator=row[2],
+                             instructions=row[3],
+                             tools=json.loads(row[4]),
+                             provider_id=row[5],
+                             provider_name=row[6])
+            return None

@@ -16,11 +16,17 @@ from langchain_openai import ChatOpenAI
 from openai import OpenAI
 import sqlite3
 
+from services.agent_service import AgentService
+
 
 # Make sure to set the OPENAI_API_KEY environment variable in a .env file
 # (create if it does not exist) - see .env.example
 
 class OpenAIService:
+
+    def __init__(self, agent_service: AgentService):
+        self.agent_service = agent_service
+
     @staticmethod
     def create_chat_body(messages, stream=False):
         # Text messages are stored inside request body using the Deep Chat JSON format:
@@ -143,9 +149,9 @@ class OpenAIService:
 
         if files:
             for requestFile in files:
-                fileReader = BufferedReader(requestFile)
+                file_reader = BufferedReader(requestFile)
                 file = client.files.create(
-                    file=(requestFile.filename, fileReader),
+                    file=(requestFile.filename, file_reader),
                     purpose='assistants'
                 )
                 file_ids.append(file.id)
@@ -184,7 +190,7 @@ class OpenAIService:
             messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
 
             response_text = ""
-            generated_file = None # TODO: multiple files
+            generated_file = None  # TODO: multiple files
             for message in messages:
 
                 if message.id in existing_message_ids:
@@ -224,14 +230,27 @@ class OpenAIService:
             if assistant.name == "Data Analyst":
                 return client.beta.assistants.retrieve(assistant.id)
 
+        agent_definition = self._load_agent_from_db("Data Analyst")
+
         assistant = client.beta.assistants.create(
-            name="Data Analyst",
-            instructions="You are a data analyst. When needed, write and run code "
-                         "to answer the question.",
+            name=agent_definition.name,
+            instructions=agent_definition.instructions,
             model="gpt-4-turbo-preview",
-            tools=[{"type": "code_interpreter"}],
+            tools=agent_definition.tools,
         )
+
+        agent_definition.provider_id = assistant.id
+        agent_definition.provider_name = "openai"
+
+        self.agent_service.update_agent(agent_definition)
+
         return assistant
+
+    def _load_agent_from_db(self, agent_name):
+        agent = self.agent_service.get_agent_by_name(agent_name)
+        if agent is None:
+            raise Exception(f"Agent with name '{agent_name}' not found")
+        return agent
 
     def get_connection(self):
         conn = sqlite3.connect('openai_data.db')
