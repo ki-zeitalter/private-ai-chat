@@ -3,10 +3,6 @@ import {MatButton} from "@angular/material/button";
 import {MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {NgForOf} from "@angular/common";
 import {AICard} from "../../model/ai-card.model";
-import {MessageContent} from "deep-chat/dist/types/messages";
-import {Thread} from "../../model/thread.model";
-import {ChatService} from "../../services/chat.service";
-import {Router} from "@angular/router";
 import {AiCardService} from "../../services/ai-card.service";
 
 @Component({

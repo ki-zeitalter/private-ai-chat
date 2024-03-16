@@ -1,16 +1,17 @@
-import json
-
-from requests.exceptions import ConnectionError
-from flask import Flask, request
-from dotenv import load_dotenv
-from flask_cors import CORS
 import os
 
+from dotenv import load_dotenv
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from requests.exceptions import ConnectionError
+
+from services.agent_repository_sqlite import AgentRepositorySqlite
+from services.agent_service import AgentService
 from services.aiservice import AIService
-from services.history_inmemory_repository import HistoryInMemoryRepository
 from services.history_service import HistoryService
 from services.history_sqlite_repository import HistorySQLiteRepository
 from services.openAIService import OpenAIService
+from services.predefined_agents import ensure_agents_are_predefined
 
 # ------------------ SETUP ------------------
 
@@ -21,7 +22,11 @@ app = Flask(__name__)
 # this will need to be reconfigured before taking the app to production
 cors = CORS(app)
 
-history_repository = HistoryInMemoryRepository()
+# history_repository = HistoryInMemoryRepository()
+
+agent_service = AgentService(AgentRepositorySqlite('agents.db'))
+
+ensure_agents_are_predefined(agent_service)
 
 history_sqlite = HistorySQLiteRepository('history.db')
 
@@ -118,6 +123,22 @@ def delete_history(thread_id):
         return {"message": "History entry deleted successfully"}, 200
     else:
         return {"error": "History entry not found"}, 404
+
+
+@app.route("/agents", methods=["GET"])
+def get_agents():
+    agents = agent_service.get_agents()
+    return jsonify([agent.to_dict() for agent in agents])
+
+
+@app.route("/agents/", methods=["POST"])
+def create_agent():
+    return agent_service.create_agent(request.json)
+
+
+@app.route("/agents/<agent_id>", methods=["DELETE"])
+def delete_agent(agent_id):
+    return agent_service.delete_agent(agent_id)
 
 
 # ------------------ START SERVER ------------------
