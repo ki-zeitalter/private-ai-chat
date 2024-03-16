@@ -29,6 +29,10 @@ export class AppCardsComponent implements OnInit {
     private aiCardService: AiCardService) {
   }
 
+  activate(card: AICard): void {
+    this.aiCardService.activate(card);
+  }
+
   ngOnInit() {
     this.aiCardService.getAiCards().subscribe(cards => {
       this.aiCards = cards;

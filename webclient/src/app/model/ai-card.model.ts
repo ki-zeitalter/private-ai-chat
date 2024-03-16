@@ -1,7 +1,15 @@
 export interface AICard {
+
+  agent_id: string;
   name: string;
+  type: string;
+  creator: string;
+  instructions: string;
+  tools: any[];
   description: string;
-  icon: string;
+  provider_id?: string;
+  provider_name?: string;
+
 
   action: () => void;
 }

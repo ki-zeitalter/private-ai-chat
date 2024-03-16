@@ -21,8 +21,23 @@ def ensure_agents_are_predefined(agent_service: AgentService):
         agent_service.create_agent(Agent(
             agent_id=str(uuid.uuid4()),
             name="Data Analyst",
+            type="assistant",
             creator="AUTOMATED",
             instructions="You are a data analyst. When needed, write and run code "
                          "to answer the question.",
-            tools=[{"type": "code_interpreter"}]
+            tools=[{"type": "code_interpreter"}],
+            description="Analyze files like CSV, Excel, PDF, etc."
+        ))
+
+    agent_exists = _check_if_agent_exists(agents, "Image Generator")
+
+    if not agent_exists:
+        agent_service.create_agent(Agent(
+            agent_id=str(uuid.uuid4()),
+            name="Image Generator",
+            type="image_generator",
+            creator="AUTOMATED",
+            instructions="",
+            tools=[],
+            description="Generate images by DALL-E 3"
         ))

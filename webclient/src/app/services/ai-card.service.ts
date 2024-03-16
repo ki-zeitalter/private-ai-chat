@@ -1,10 +1,9 @@
 import {Injectable} from '@angular/core';
-import {Observable, of} from "rxjs";
+import {Observable} from "rxjs";
 import {AICard} from "../model/ai-card.model";
-import {MessageContent} from "deep-chat/dist/types/messages";
-import {Thread} from "../model/thread.model";
 import {ChatService} from "./chat.service";
 import {Router} from "@angular/router";
+import {HttpClient} from "@angular/common/http";
 
 @Injectable({
   providedIn: 'root'
@@ -12,76 +11,29 @@ import {Router} from "@angular/router";
 export class AiCardService {
 
   constructor(private chatService: ChatService,
-              private router: Router,) {
+              private router: Router,
+              private httpClient: HttpClient) {
   }
 
   getAiCards(): Observable<AICard[]> {
-    return of(this.constructDemoCards());
+
+    //const headers = new HttpHeaders().set('User-Id', user_id);
+
+    return this.httpClient.get<AICard[]>("http://localhost:8080/agents")
+
   }
 
-  constructDemoCards(): AICard[] {
-    const result: AICard[] = [];
+  activate(card: AICard): void {
+    if (card.type === 'assistant') {
+      this.router.navigate(['analyzer']).then(() =>
+        this.chatService.activateThread(null)
+      )
+    } else if (card.type === 'image_generator') {
+      this.router.navigate(['text-to-image']).then(() =>
+        this.chatService.activateThread(null)
+      )
 
-    result.push({
-      name: 'Email assistant',
-      description: 'Write an email with the help of an ai assistant',
-      icon: '',
-      action: () => {
-
-        const appMessages: MessageContent[] = [];
-
-        appMessages.push({
-          role: 'ai',
-          'text': 'Hello! I am your AI assistant for writing professional sounding emails!'
-        })
-
-        this.newThread(appMessages);
-
-        //this.deepChatElement.nativeElement.introMessage = {'text': 'Please enter the topic of the email!'} as IntroMessage
-
-        // TODO
-        //this.deepChatElement.nativeElement.textInput = {placeholder: {'text': 'Insert topic of the email here!'}}
-
-
-      }
-    })
-
-    result.push({
-      name: 'Generate images',
-      description: 'Generate images by DALL-E 3',
-      icon: '',
-      action: () => {
-        this.router.navigate(['text-to-image']).then(() =>
-          this.chatService.activateThread(null)
-        )
-      }
-    })
-
-    result.push({
-      name: 'Analyze files',
-      description: 'Analyze files like CSV, Excel, PDF, etc.',
-      icon: '',
-      action: () => {
-        this.router.navigate(['analyzer']).then(() =>
-          this.chatService.activateThread(null)
-        )
-      }
-    })
-
-    return result;
-  }
-
-  newThread(initialMessages?: MessageContent[]): void {
-    let thread: Thread | null = null;
-
-    if (initialMessages) {
-      thread = {} as Thread
-      thread.messages = initialMessages || [];
     }
-
-
-    this.router.navigate(['chat']).then(() => {
-      this.chatService.activateThread(thread)
-    })
   }
+
 }

@@ -18,11 +18,13 @@ class AgentRepositorySqlite(AgentRepository):
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     agent_id TEXT,
                     name TEXT,
+                    type TEXT,
                     creator TEXT,
                     instructions TEXT,
                     tools TEXT,
                     provider_id TEXT,
-                    provider_name TEXT             
+                    provider_name TEXT,
+                    description TEXT             
                 )
             """)
 
@@ -30,7 +32,7 @@ class AgentRepositorySqlite(AgentRepository):
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT agent_id, name, creator, instructions, tools, provider_id, provider_name
+                SELECT agent_id, name, type, creator, instructions, tools, provider_id, provider_name, description
                 FROM agent
                 WHERE agent_id = ?
             """, (agent_id,))
@@ -38,43 +40,50 @@ class AgentRepositorySqlite(AgentRepository):
             if row:
                 return Agent(agent_id=row[0],
                              name=row[1],
-                             creator=row[2],
-                             instructions=row[3],
-                             tools=json.loads(row[4]),
-                             provider_id=row[5],
-                             provider_name=row[6])
+                             type=row[2],
+                             creator=row[3],
+                             instructions=row[4],
+                             tools=json.loads(row[5]),
+                             provider_id=row[6],
+                             provider_name=row[7],
+                             description=row[8])
             return None
 
     def get_agents(self) -> List[Agent]:
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT agent_id, name, creator, instructions, tools, provider_id, provider_name
+                SELECT agent_id, name, type, creator, instructions, tools, provider_id, provider_name, description
                 FROM agent
             """)
             rows = cursor.fetchall()
             return [Agent(agent_id=row[0],
                           name=row[1],
-                          creator=row[2],
-                          instructions=row[3],
-                          tools=json.loads(row[4]),
-                          provider_id=row[5],
-                          provider_name=row[6]) for row in rows]
+                          type=row[2],
+                          creator=row[3],
+                          instructions=row[4],
+                          tools=json.loads(row[5]),
+                          provider_id=row[6],
+                          provider_name=row[7],
+                          description=row[8]) for row in rows]
 
     def create_agent(self, agent: Agent) -> Agent:
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO agent (agent_id, name, creator, instructions, tools, provider_id, provider_name)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO agent (agent_id, name, type, creator, instructions, tools, provider_id, 
+                provider_name, description)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 agent.agent_id,
                 agent.name,
+                agent.type,
                 agent.creator,
                 agent.instructions,
                 json.dumps(agent.tools),
                 agent.provider_id,
-                agent.provider_name))
+                agent.provider_name,
+                agent.description))
             return agent
 
     def update_agent(self, agent: Agent) -> Agent:
@@ -82,16 +91,19 @@ class AgentRepositorySqlite(AgentRepository):
             cursor = conn.cursor()
             cursor.execute("""
                 UPDATE agent
-                SET name = ?, creator = ?, instructions = ?, tools = ?, provider_id = ?, provider_name = ?
+                SET name = ?, type = ?, creator = ?, instructions = ?, tools = ?, provider_id = ?, 
+                provider_name = ?, description = ?
                 WHERE agent_id = ?
             """, (
                 agent.name,
+                agent.type,
                 agent.creator,
                 agent.instructions,
                 json.dumps(agent.tools),
                 agent.provider_id,
                 agent.provider_name,
-                agent.agent_id))
+                agent.agent_id,
+                agent.description))
             return agent
 
     def delete_agent(self, agent_id: str) -> None:
@@ -106,7 +118,7 @@ class AgentRepositorySqlite(AgentRepository):
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT agent_id, name, creator, instructions, tools, provider_id, provider_name
+                SELECT agent_id, name, type, creator, instructions, tools, provider_id, provider_name, description
                 FROM agent
                 WHERE name = ?
             """, (agent_name,))
@@ -114,9 +126,11 @@ class AgentRepositorySqlite(AgentRepository):
             if row:
                 return Agent(agent_id=row[0],
                              name=row[1],
-                             creator=row[2],
-                             instructions=row[3],
-                             tools=json.loads(row[4]),
-                             provider_id=row[5],
-                             provider_name=row[6])
+                             type=row[2],
+                             creator=row[3],
+                             instructions=row[4],
+                             tools=json.loads(row[5]),
+                             provider_id=row[6],
+                             provider_name=row[7],
+                             description=row[8])
             return None
