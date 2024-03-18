@@ -10,6 +10,4 @@ export interface AICard {
   provider_id?: string;
   provider_name?: string;
 
-
-  action: () => void;
 }

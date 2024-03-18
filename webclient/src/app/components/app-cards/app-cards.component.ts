@@ -1,9 +1,11 @@
 import {Component, OnInit} from '@angular/core';
-import {MatButton} from "@angular/material/button";
+import {MatButton, MatMiniFabButton} from "@angular/material/button";
 import {MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {NgForOf} from "@angular/common";
 import {AICard} from "../../model/ai-card.model";
 import {AiCardService} from "../../services/ai-card.service";
+import {MatIcon} from "@angular/material/icon";
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-app-cards',
@@ -15,7 +17,10 @@ import {AiCardService} from "../../services/ai-card.service";
     MatCardContent,
     MatCardHeader,
     MatCardTitle,
-    NgForOf
+    NgForOf,
+    MatIcon,
+    MatMiniFabButton,
+    RouterLink
   ],
   templateUrl: './app-cards.component.html',
   styleUrl: './app-cards.component.scss'
