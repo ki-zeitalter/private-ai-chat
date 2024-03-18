@@ -1,35 +1,44 @@
 <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
 
-  <form style="display: flex; flex-direction: column; flex-wrap: wrap; margin: 3px; width: 50vh">
+  <form [formGroup]="formular" style="display: flex; flex-direction: column; flex-wrap: wrap; margin: 3px; width: 50vh">
     <h1>Create Assistant</h1>
     <mat-form-field>
       <mat-label>Name</mat-label>
-      <input matInput>
+      <input matInput name="name" formControlName="name">
     </mat-form-field>
     <mat-form-field>
       <mat-label>Instructions</mat-label>
-      <textarea matInput></textarea>
+      <textarea matInput name="instructions" formControlName="instructions"></textarea>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Description</mat-label>
+      <textarea matInput name="description" formControlName="description"></textarea>
     </mat-form-field>
 
     <mat-form-field>
       <mat-label>Model</mat-label>
-      <mat-select>
+      <mat-select name="model" formControlName="model">
         <mat-option value="gpt-4-turbo">GPT-4-Turbo</mat-option>
       </mat-select>
     </mat-form-field>
 
-    <mat-slide-toggle>Code Interpreter</mat-slide-toggle>
+    <mat-slide-toggle name="codeInterpreter" formControlName="codeInterpreter">Code Interpreter</mat-slide-toggle>
 
-    <mat-slide-toggle>Retrieval</mat-slide-toggle>
+    <mat-slide-toggle name="retrieval" formControlName="retrieval">Retrieval</mat-slide-toggle>
 
     <mat-divider></mat-divider>
+    <h2>Files</h2>
     <button mat-mini-fab color="primary" aria-label="Add file" routerLink="assistant-editor">
       <mat-icon>file_upload</mat-icon>
     </button>
+
     <mat-selection-list>
-
-      <mat-list-option>blabla.csv</mat-list-option>
-
+      <mat-list-option *ngFor="let file of files">{{ file }}</mat-list-option>
     </mat-selection-list>
+
+    <button mat-raised-button color="primary" [disabled]="formular.invalid" (click)="save()">Save</button>
   </form>
+
 </div>
+
