@@ -29,12 +29,13 @@
 
     <mat-divider></mat-divider>
     <h2>Files</h2>
-    <button mat-mini-fab color="primary" aria-label="Add file" routerLink="assistant-editor">
+    <input type="file" (change)="onFileSelected($event)" style="display: none;" #fileInput>
+    <button mat-mini-fab color="primary" aria-label="Add file" (click)="fileInput.click()">
       <mat-icon>file_upload</mat-icon>
     </button>
 
     <mat-selection-list>
-      <mat-list-option *ngFor="let file of files">{{ file }}</mat-list-option>
+      <mat-list-option *ngFor="let file of files">{{ file.name }}</mat-list-option>
     </mat-selection-list>
 
     <button mat-raised-button color="primary" [disabled]="formular.invalid" (click)="save()">Save</button>

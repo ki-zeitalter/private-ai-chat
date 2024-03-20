@@ -13,6 +13,7 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {NgForOf} from "@angular/common";
 import {FormGroup, FormControl, Validators} from '@angular/forms';
 import {v4 as uuidv4} from "uuid";
+import {AiCardService} from "../../services/ai-card.service";
 
 @Component({
   selector: 'app-assistant-editor',
@@ -49,12 +50,24 @@ export class AssistantEditorComponent {
     model: new FormControl(''),
     codeInterpreter: new FormControl(false),
     retrieval: new FormControl(false),
+    // TODO functions
   });
 
+  constructor(private aiCardService: AiCardService) {
+  }
 
-  // TODO functions
 
   files: any[] = [];
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = reader.result?.toString().split(',')[1];
+      this.files.push(base64String);
+    };
+    reader.readAsDataURL(file);
+  }
 
   save(): void {
     const tools = [];
@@ -73,8 +86,13 @@ export class AssistantEditorComponent {
       agent_id: uuidv4(),
       creator: 'manual',
       instructions: this.formular.get('instructions')!.value!,
-      tools: tools
+      tools: tools,
+      files: this.files
     };
     console.log(assistantData);
+
+    this.aiCardService.saveAiCard(assistantData).subscribe(card => {
+      console.log(card);
+    });
   }
 }

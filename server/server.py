@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from requests.exceptions import ConnectionError
+from services.agent import Agent
 
 from services.agent_repository_sqlite import AgentRepositorySqlite
 from services.agent_service import AgentService
@@ -134,7 +135,9 @@ def get_agents():
 
 @app.route("/agents/", methods=["POST"])
 def create_agent():
-    return agent_service.create_agent(request.json)
+    agent_data = request.json
+    agent = Agent.from_dict(agent_data)
+    return jsonify(agent_service.create_agent(agent).to_dict())
 
 
 @app.route("/agents/<agent_id>", methods=["DELETE"])
