@@ -23,6 +23,10 @@ export class AiCardService {
 
   }
 
+  saveAiCard(card: AICard): Observable<AICard> {
+    return this.httpClient.post<AICard>("http://localhost:8080/agents", card)
+  }
+
   activate(card: AICard): void {
     if (card.type === 'assistant') {
       this.router.navigate(['analyzer']).then(() =>
