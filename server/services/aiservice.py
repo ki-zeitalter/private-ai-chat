@@ -1,11 +1,14 @@
 import json
 
+from services.agent import Agent
+
 
 class AIService:
 
-    def __init__(self, history_service, model_service):
+    def __init__(self, history_service, model_service, agent_repository):
         self.history_service = history_service
         self.model_service = model_service
+        self.agent_repository = agent_repository
 
     def chat(self, body, user_id, thread_id):
         # Text messages are stored inside request body using the Deep Chat JSON format:
@@ -82,7 +85,13 @@ class AIService:
 
         self.history_service.add_history(user_id, thread_id, messages, 'analyzer', thread_name=thread_name)
 
-        result = self.model_service.code_interpreter(messages, files, thread_id)
+        agent_id = request.agent_id
+
+        agent = self.agent_repository.get_agent(agent_id)
+
+        # TODO: Errorhandling if agent is not found
+
+        result = self.model_service.code_interpreter(messages, files, thread_id, agent)
         messages.append({'role': 'ai', 'text': result['text']})
 
         if result.get('files'):
@@ -91,6 +100,13 @@ class AIService:
         self.history_service.add_history(user_id, thread_id, messages, 'chat')
 
         return result
+
+    def create_agent(self, agent: Agent) -> Agent:
+        created_agent = self.model_service.create_agent(agent)
+
+        self.agent_repository.create_agent(created_agent)
+
+        return created_agent
 
     def _generate_thread_name(self, question):
         messages = [

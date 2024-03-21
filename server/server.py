@@ -1,18 +1,17 @@
+import json
 import os
 
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from requests.exceptions import ConnectionError
-from services.agent import Agent
 
+from services.agent import Agent
 from services.agent_repository_sqlite import AgentRepositorySqlite
-from services.agent_service import AgentService
 from services.aiservice import AIService
 from services.history_service import HistoryService
 from services.history_sqlite_repository import HistorySQLiteRepository
 from services.openAIService import OpenAIService
-from services.predefined_agents import ensure_agents_are_predefined
 
 # ------------------ SETUP ------------------
 
@@ -25,17 +24,21 @@ cors = CORS(app)
 
 # history_repository = HistoryInMemoryRepository()
 
-agent_service = AgentService(AgentRepositorySqlite('agents.db'))
 
-ensure_agents_are_predefined(agent_service)
+# ensure_agents_are_predefined(agent_service)
 
 history_sqlite = HistorySQLiteRepository('history.db')
 
 history_service = HistoryService(history_sqlite)
 
-openai_service = OpenAIService(agent_service)
+openai_service = OpenAIService()
 
-ai_service = AIService(history_service, openai_service)
+agent_repository = AgentRepositorySqlite('agents.db')
+
+ai_service = AIService(history_service, openai_service, agent_repository)
+
+
+# agent_service = AgentService(AgentRepositorySqlite('agents.db'), ai_service)
 
 
 # ------------------ EXCEPTION HANDLERS ------------------
@@ -129,7 +132,7 @@ def delete_history(thread_id):
 
 @app.route("/agents", methods=["GET"])
 def get_agents():
-    agents = agent_service.get_agents()
+    agents = agent_repository.get_agents()
     return jsonify([agent.to_dict() for agent in agents])
 
 
@@ -137,12 +140,14 @@ def get_agents():
 def create_agent():
     agent_data = request.json
     agent = Agent.from_dict(agent_data)
-    return jsonify(agent_service.create_agent(agent).to_dict())
+    agent.tools = [json.loads(tool) for tool in agent.tools]
+    return jsonify(ai_service.create_agent(agent).to_dict())
 
 
 @app.route("/agents/<agent_id>", methods=["DELETE"])
 def delete_agent(agent_id):
-    return agent_service.delete_agent(agent_id)
+    # TODO: Delete agent in OpenAI
+    return agent_repository.delete_agent(agent_id)
 
 
 # ------------------ START SERVER ------------------
