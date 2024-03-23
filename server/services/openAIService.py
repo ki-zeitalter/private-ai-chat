@@ -140,7 +140,7 @@ class OpenAIService:
         assistant = self.get_assistant(agent)
 
         if thread_data is not None:
-            file_ids = thread_data['file_ids']
+            file_ids = [file_id for file_id in thread_data['file_ids'] if file_id != '']
         else:
             file_ids = []
 

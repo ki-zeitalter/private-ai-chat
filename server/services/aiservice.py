@@ -66,7 +66,7 @@ class AIService:
 
         return result
 
-    def interpreter(self, request, user_id, thread_id):
+    def interpreter(self, request, user_id, thread_id, assistant_id):
         files = request.files.getlist("files")
         messages = []
 
@@ -85,9 +85,7 @@ class AIService:
 
         self.history_service.add_history(user_id, thread_id, messages, 'analyzer', thread_name=thread_name)
 
-        agent_id = request.agent_id
-
-        agent = self.agent_repository.get_agent(agent_id)
+        agent = self.agent_repository.get_agent(assistant_id)
 
         # TODO: Errorhandling if agent is not found
 

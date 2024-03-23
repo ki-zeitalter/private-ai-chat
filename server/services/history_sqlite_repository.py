@@ -19,11 +19,12 @@ class HistorySQLiteRepository(HistoryRepository):
                     thread_name TEXT,
                     messages TEXT,
                     timestamp TEXT,
-                    app_type TEXT
+                    app_type TEXT,
+                    assistant_id TEXT
                 )
             """)
 
-    def add_history(self, user_id, thread_id, messages, app_type, thread_name=None):
+    def add_history(self, user_id, thread_id, messages, app_type, thread_name=None, assistant_id=None):
         messages_json = json.dumps(messages)
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
@@ -41,15 +42,15 @@ class HistorySQLiteRepository(HistoryRepository):
                 """, (messages_json, datetime.now().isoformat(), history_id))
             else:
                 cursor.execute("""
-                    INSERT INTO history (user_id, thread_id, thread_name, messages, timestamp, app_type)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (user_id, thread_id, thread_name, messages_json, datetime.now().isoformat(), app_type))
+                    INSERT INTO history (user_id, thread_id, thread_name, messages, timestamp, app_type, assistant_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (user_id, thread_id, thread_name, messages_json, datetime.now().isoformat(), app_type, assistant_id))
 
     def get_history(self, user_id):
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT thread_id, thread_name, messages, timestamp, app_type
+                SELECT thread_id, thread_name, messages, timestamp, app_type, assistant_id
                 FROM history
                 WHERE user_id = ?
                 ORDER BY timestamp DESC
@@ -61,7 +62,8 @@ class HistorySQLiteRepository(HistoryRepository):
                     "thread_name": row[1],
                     "messages": json.loads(row[2]),
                     "timestamp": row[3],
-                    "app_type": row[4]
+                    "app_type": row[4],
+                    "assistant_id": row[5]
                 }
                 for row in rows
             ]

@@ -109,7 +109,11 @@ def interpreter():
     if thread_id is None:
         return {"error": "Thread-Id header is required"}, 400
 
-    result = ai_service.interpreter(request, user_id, thread_id)
+    assistant_id = request.headers.get('Assistant-Id')
+    if assistant_id is None:
+        return {"error": "Assistant-Id header is required"}, 400
+
+    result = ai_service.interpreter(request, user_id, thread_id, assistant_id)
     return result
 
 

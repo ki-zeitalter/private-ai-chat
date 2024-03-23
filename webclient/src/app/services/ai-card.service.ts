@@ -30,11 +30,11 @@ export class AiCardService {
   activate(card: AICard): void {
     if (card.type === 'assistant') {
       this.router.navigate(['analyzer']).then(() =>
-        this.chatService.activateThread(null)
+        this.chatService.activateThread(null, card.agent_id)
       )
     } else if (card.type === 'image_generator') {
       this.router.navigate(['text-to-image']).then(() =>
-        this.chatService.activateThread(null)
+        this.chatService.activateThread(null, card.agent_id)
       )
 
     }

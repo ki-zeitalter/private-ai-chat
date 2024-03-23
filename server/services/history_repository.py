@@ -5,7 +5,7 @@ from typing import List, Dict
 
 class HistoryRepository(ABC):
     @abstractmethod
-    def add_history(self, user_id: str, thread_id: str, messages: List[Dict], app_type: str, thread_name: str = None):
+    def add_history(self, user_id: str, thread_id: str, messages: List[Dict], app_type: str, thread_name: str = None, assistant_id: str = None):
         """
         Adds a new history to the repository or updates an existing history.
         :param thread_name: The name of the thread.
@@ -13,6 +13,7 @@ class HistoryRepository(ABC):
         :param thread_id: The ID of the thread.
         :param messages: A list of messages in the history.
         :param app_type: The type of the history. Default is "chat".
+        :param assistant_id: The ID of the assistant. Default is None.
         """
         pass
 
