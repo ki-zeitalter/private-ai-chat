@@ -83,7 +83,8 @@ class AIService:
 
         thread_name = self.ensure_thread_name(messages, user_id, thread_id)
 
-        self.history_service.add_history(user_id, thread_id, messages, 'analyzer', thread_name=thread_name)
+        self.history_service.add_history(user_id, thread_id, messages, 'analyzer', thread_name=thread_name,
+                                         assistant_id=assistant_id)
 
         agent = self.agent_repository.get_agent(assistant_id)
 
