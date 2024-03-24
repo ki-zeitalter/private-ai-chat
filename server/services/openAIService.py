@@ -1,5 +1,6 @@
 import base64
 import json
+import mimetypes
 import os
 import queue
 import sqlite3
@@ -187,7 +188,7 @@ class OpenAIService:
             messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
 
             response_text = ""
-            generated_file = None  # TODO: multiple files
+            generated_file = []
             for message in messages:
 
                 if message.id in existing_message_ids:
@@ -197,19 +198,38 @@ class OpenAIService:
                     if content.type == "text":
                         if message.role == "assistant":
                             response_text += content.text.value + "\n\n"
+
+                        if content.text.annotations:
+                            print("Annotations", content.text.annotations)
+
+                            file_data = client.files.content(content.text.annotations[0].file_path.file_id)
+                            file_data_bytes = file_data.read()
+                            b64_content = base64.b64encode(file_data_bytes).decode()
+                            file_name = os.path.basename(content.text.annotations[0].text)
+                            # mimetype = mimetypes.guess_type(file_name)[0]
+                            #if mimetype is None:
+                            mimetype = "application/octet-stream"
+
+                            link = "data:" + mimetype + ";name=" + file_name + ";base64," + b64_content
+                            response_text = response_text.replace(content.text.annotations[0].text, link)
+
+                            # generated_file.append(
+                            #    {"type": "file", "name": file_name,
+                            #     "src": "data:text/csv;base64," + b64_content})
                     elif content.type == "image_file":
                         print("Image file")  # MessageContentImageFile
 
                         image_data = client.files.content(content.image_file.file_id)
                         image_data_bytes = image_data.read()
-                        generated_file = base64.b64encode(image_data_bytes).decode()
+                        b64_content = base64.b64encode(image_data_bytes).decode()
+                        generated_file.append({"type": "image", "src": "data:image/png;base64," + b64_content})
                     else:
                         print("Other type of message", content.type)
                         print(message.content[0])  # TODO: Handle other types of messages
 
             if generated_file is not None:
                 return {"text": response_text,
-                        "files": [{"type": "image", "src": "data:image/png;base64," + generated_file}]}
+                        "files": [file for file in generated_file]}
 
             return {"text": response_text}
         else:

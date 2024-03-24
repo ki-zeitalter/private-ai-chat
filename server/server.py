@@ -12,6 +12,7 @@ from services.aiservice import AIService
 from services.history_service import HistoryService
 from services.history_sqlite_repository import HistorySQLiteRepository
 from services.openAIService import OpenAIService
+from services.predefined_agents import ensure_agents_are_predefined
 
 # ------------------ SETUP ------------------
 
@@ -25,7 +26,7 @@ cors = CORS(app)
 # history_repository = HistoryInMemoryRepository()
 
 
-# ensure_agents_are_predefined(agent_service)
+
 
 history_sqlite = HistorySQLiteRepository('history.db')
 
@@ -34,6 +35,8 @@ history_service = HistoryService(history_sqlite)
 openai_service = OpenAIService()
 
 agent_repository = AgentRepositorySqlite('agents.db')
+
+ensure_agents_are_predefined(agent_repository)
 
 ai_service = AIService(history_service, openai_service, agent_repository)
 
