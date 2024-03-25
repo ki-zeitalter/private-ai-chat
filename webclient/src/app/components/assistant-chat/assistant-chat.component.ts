@@ -6,17 +6,17 @@ import {CommonModule} from "@angular/common";
 import {environment} from "../../../environments/environment";
 
 @Component({
-  selector: 'app-analyzer',
+  selector: 'app-assistant-chat',
   standalone: true,
   imports: [
     HighlightModule,
     CommonModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  templateUrl: './analyzer.component.html',
-  styleUrl: './analyzer.component.scss'
+  templateUrl: './assistant-chat.component.html',
+  styleUrl: './assistant-chat.component.scss'
 })
-export class AnalyzerComponent extends BaseChatComponent {
+export class AssistantChatComponent extends BaseChatComponent {
   constructor(private _chatService: ChatService) {
     super(_chatService)
   }
