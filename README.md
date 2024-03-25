@@ -8,8 +8,26 @@ Features
 - Chat UI with the look and feel of well known chats
 - Formatted output
 - Images + Files
+- Custom AI assistants with code interpreter and retrieval
 
 It uses the fantastic chat component [Deep Chat](https://github.com/OvidijusParsiunas/deep-chat)
+
+
+
+# Disclaimer
+This is a demo application I use to learn the concepts and the technologies.
+I'll do plenty of refactorings and changes, so don't expect a stable version.
+Sometimes I just throw everything away and start from scratch.
+
+Some concepts are just placeholders and not fully implemented. For example I add a 
+generated user id to the requests, so this is kind of a preparation for an authentication
+scheme. You might for example add some kind of JWT token to the requests instead of the simple
+user id.
+
+Consider this as a inspiration for your own projects. I'm happy to get feedback and suggestions.
+Contributions are of course welcome.
+
+And of course feel free to use the code for your own projects.
 
 # Getting started
 
@@ -43,6 +61,17 @@ When it is done, you can start the client in a development mode as following:
 `ng serve`
 
 The web frontend will be provided at http://localhost:4200/.
+
+# Screenshots
+
+Current working state:
+![Screenshot](doc/chat-demo.png)
+
+Generate images using Dall-E 3:
+![Screenshot](doc/chat-demo-img.png)
+
+Use Code Interpreter:
+![Screenshot](doc/chat-demo-interpreter.png)
 
 # Credits
 
