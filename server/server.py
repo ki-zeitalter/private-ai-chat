@@ -26,8 +26,6 @@ cors = CORS(app)
 # history_repository = HistoryInMemoryRepository()
 
 
-
-
 history_sqlite = HistorySQLiteRepository('history.db')
 
 history_service = HistoryService(history_sqlite)
@@ -102,7 +100,7 @@ def text_to_image():
     return ai_service.text_to_image(body, user_id, thread_id)
 
 
-@app.route("/interpreter", methods=["POST"])
+@app.route("/assistant-chat", methods=["POST"])
 def interpreter():
     user_id = request.headers.get('User-Id')
     if user_id is None:
