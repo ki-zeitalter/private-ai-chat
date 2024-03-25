@@ -6,13 +6,13 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from requests.exceptions import ConnectionError
 
-from services.agent import Agent
-from services.agent_repository_sqlite import AgentRepositorySqlite
+from services.assistant import Assistant
+from services.assistant_repository_sqlite import AssistantRepositorySqlite
 from services.aiservice import AIService
 from services.history_service import HistoryService
 from services.history_sqlite_repository import HistorySQLiteRepository
 from services.openAIService import OpenAIService
-from services.predefined_agents import ensure_agents_are_predefined
+from services.predefined_assistants import ensure_assistants_are_predefined
 
 # ------------------ SETUP ------------------
 
@@ -32,14 +32,14 @@ history_service = HistoryService(history_sqlite)
 
 openai_service = OpenAIService()
 
-agent_repository = AgentRepositorySqlite('agents.db')
+assistant_repository = AssistantRepositorySqlite('assistants.db')
 
-ensure_agents_are_predefined(agent_repository)
+ensure_assistants_are_predefined(assistant_repository)
 
-ai_service = AIService(history_service, openai_service, agent_repository)
+ai_service = AIService(history_service, openai_service, assistant_repository)
 
 
-# agent_service = AgentService(AgentRepositorySqlite('agents.db'), ai_service)
+# assistant_service = AssistantService(AssistantRepositorySqlite('assistants.db'), ai_service)
 
 
 # ------------------ EXCEPTION HANDLERS ------------------
@@ -101,7 +101,7 @@ def text_to_image():
 
 
 @app.route("/assistant-chat", methods=["POST"])
-def interpreter():
+def assistant_chat():
     user_id = request.headers.get('User-Id')
     if user_id is None:
         return {"error": "User-Id header is required"}, 400
@@ -114,7 +114,7 @@ def interpreter():
     if assistant_id is None:
         return {"error": "Assistant-Id header is required"}, 400
 
-    result = ai_service.interpreter(request, user_id, thread_id, assistant_id)
+    result = ai_service.assistant_chat(request, user_id, thread_id, assistant_id)
     return result
 
 
@@ -136,23 +136,23 @@ def delete_history(thread_id):
 
 
 @app.route("/assistants", methods=["GET"])
-def get_agents():
-    agents = agent_repository.get_agents()
-    return jsonify([agent.to_dict() for agent in agents])
+def get_assistants():
+    assistants = assistant_repository.get_assistants()
+    return jsonify([assistant.to_dict() for assistant in assistants])
 
 
 @app.route("/assistants/", methods=["POST"])
-def create_agent():
-    agent_data = request.json
-    agent = Agent.from_dict(agent_data)
-    agent.tools = [json.loads(tool) for tool in agent.tools]
-    return jsonify(ai_service.create_agent(agent).to_dict())
+def create_assistant():
+    assistant_data = request.json
+    assistant = Assistant.from_dict(assistant_data)
+    assistant.tools = [json.loads(tool) for tool in assistant.tools]
+    return jsonify(ai_service.create_assistant(assistant).to_dict())
 
 
-@app.route("/assistants/<agent_id>", methods=["DELETE"])
-def delete_agent(assistant_id):
-    # TODO: Delete agent in OpenAI
-    return agent_repository.delete_agent(assistant_id)
+@app.route("/assistants/<assistant_id>", methods=["DELETE"])
+def delete_assistant(assistant_id):
+    # TODO: Delete assistant in OpenAI
+    return assistant_repository.delete_assistant(assistant_id)
 
 
 # ------------------ START SERVER ------------------

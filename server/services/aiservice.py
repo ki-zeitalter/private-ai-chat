@@ -1,14 +1,14 @@
 import json
 
-from services.agent import Agent
+from services.assistant import Assistant
 
 
 class AIService:
 
-    def __init__(self, history_service, model_service, agent_repository):
+    def __init__(self, history_service, model_service, assistant_repository):
         self.history_service = history_service
         self.model_service = model_service
-        self.agent_repository = agent_repository
+        self.assistant_repository = assistant_repository
 
     def chat(self, body, user_id, thread_id):
         # Text messages are stored inside request body using the Deep Chat JSON format:
@@ -66,7 +66,7 @@ class AIService:
 
         return result
 
-    def interpreter(self, request, user_id, thread_id, assistant_id):
+    def assistant_chat(self, request, user_id, thread_id, assistant_id):
         files = request.files.getlist("files")
         messages = []
 
@@ -86,11 +86,11 @@ class AIService:
         self.history_service.add_history(user_id, thread_id, messages, 'analyzer', thread_name=thread_name,
                                          assistant_id=assistant_id)
 
-        agent = self.agent_repository.get_agent(assistant_id)
+        assistant = self.assistant_repository.get_assistant(assistant_id)
 
-        # TODO: Errorhandling if agent is not found
+        # TODO: Errorhandling if assistant is not found
 
-        result = self.model_service.code_interpreter(messages, files, thread_id, agent)
+        result = self.model_service.code_interpreter(messages, files, thread_id, assistant)
         messages.append({'role': 'ai', 'text': result['text']})
 
         if result.get('files'):
@@ -100,12 +100,12 @@ class AIService:
 
         return result
 
-    def create_agent(self, agent: Agent) -> Agent:
-        created_agent = self.model_service.create_agent(agent)
+    def create_assistant(self, assistant: Assistant) -> Assistant:
+        created_assistant = self.model_service.create_assistant(assistant)
 
-        self.agent_repository.create_agent(created_agent)
+        self.assistant_repository.create_assistant(created_assistant)
 
-        return created_agent
+        return created_assistant
 
     def _generate_thread_name(self, question):
         messages = [

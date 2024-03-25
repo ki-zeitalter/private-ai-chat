@@ -83,7 +83,7 @@ export class AssistantEditorComponent {
       name: this.formular.get('name')!.value!,
       description: this.formular.get('description')!.value!,
       type: 'assistant',
-      agent_id: uuidv4(),
+      assistant_id: uuidv4(),
       creator: 'manual',
       instructions: this.formular.get('instructions')!.value!,
       tools: tools,

@@ -27,11 +27,11 @@ export class AssistantService {
   activate(assistant: Assistant): void {
     if (assistant.type === 'assistant') {
       this.router.navigate(['analyzer']).then(() =>
-        this.chatService.activateThread(null, assistant.agent_id)
+        this.chatService.activateThread(null, assistant.assistant_id)
       )
     } else if (assistant.type === 'image_generator') {
       this.router.navigate(['text-to-image']).then(() =>
-        this.chatService.activateThread(null, assistant.agent_id)
+        this.chatService.activateThread(null, assistant.assistant_id)
       )
 
     }

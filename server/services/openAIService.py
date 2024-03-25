@@ -1,6 +1,5 @@
 import base64
 import json
-import mimetypes
 import os
 import queue
 import sqlite3
@@ -17,7 +16,7 @@ from langchain_core.outputs import LLMResult
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
-from services.agent import Agent
+from services.assistant import Assistant
 
 
 # Make sure to set the OPENAI_API_KEY environment variable in a .env file
@@ -133,12 +132,12 @@ class OpenAIService:
         # https://deepchat.dev/docs/connect/#Response
         return {"files": [{"type": "image", "src": "data:image/png;base64," + result}]}
 
-    def code_interpreter(self, messages, files, thread_id, agent: Agent):
+    def code_interpreter(self, messages, files, thread_id, assistant: Assistant):
         client = OpenAI()
 
         thread_data = self.load_thread_data(thread_id)
 
-        assistant = self.get_assistant(agent)
+        openai_assistant = self.get_assistant(assistant)
 
         if thread_data is not None:
             file_ids = [file_id for file_id in thread_data['file_ids'] if file_id != '']
@@ -168,10 +167,10 @@ class OpenAIService:
 
         run = client.beta.threads.runs.create(
             thread_id=thread.id,
-            assistant_id=assistant.id,
+            assistant_id=openai_assistant.id,
         )
 
-        self.store_thread_data(thread_id, file_ids, thread.id, assistant.id)
+        self.store_thread_data(thread_id, file_ids, thread.id, openai_assistant.id)
 
         existing_messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
         existing_message_ids = [message.id for message in existing_messages]
@@ -236,52 +235,32 @@ class OpenAIService:
 
         return {'text': 'Something went wrong... sorry!.'}
 
-    def create_agent(self, agent: Agent) -> Agent:
+    def create_assistant(self, assistant: Assistant) -> Assistant:
         client = OpenAI()
 
-        assistant = client.beta.assistants.create(
-            name=agent.name,
-            instructions=agent.instructions,
-            model="gpt-4-turbo-preview",  # TODO: Get model from agent
-            tools=agent.tools,  # TODO: files
+        openai_assistant = client.beta.assistants.create(
+            name=assistant.name,
+            instructions=assistant.instructions,
+            model="gpt-4-turbo-preview",  # TODO: Get model from assistant
+            tools=assistant.tools,  # TODO: files
         )
 
-        agent.provider_id = assistant.id
-        agent.provider_name = "openai"
+        assistant.provider_id = openai_assistant.id
+        assistant.provider_name = "openai"
 
-        return agent
+        return assistant
 
-    def get_assistant(self, agent: Agent):
+    def get_assistant(self, assistant: Assistant):
         client = OpenAI()
 
         assistants = client.beta.assistants.list()
 
-        for assistant in assistants:
-            print(assistant.id, assistant.name, assistant.instructions, assistant.model, assistant.tools)
-            if assistant.id == agent.provider_id:
-                return client.beta.assistants.retrieve(assistant.id)
-
-        # agent_definition = self._load_agent_from_db("Data Analyst")
-        #
-        # assistant = client.beta.assistants.create(
-        #     name=agent_definition.name,
-        #     instructions=agent_definition.instructions,
-        #     model="gpt-4-turbo-preview",
-        #     tools=agent_definition.tools,
-        # )
-        #
-        # agent_definition.provider_id = assistant.id
-        # agent_definition.provider_name = "openai"
-        #
-        # self.agent_service.update_agent(agent_definition)
+        for openai_assistant in assistants:
+            print(openai_assistant.id, assistant.name, assistant.instructions, openai_assistant.model, assistant.tools)
+            if openai_assistant.id == assistant.provider_id:
+                return client.beta.assistants.retrieve(openai_assistant.id)
 
         return None
-
-    # def _load_agent_from_db(self, agent_name):
-    #     agent = self.agent_service.get_agent_by_name(agent_name)
-    #     if agent is None:
-    #         raise Exception(f"Agent with name '{agent_name}' not found")
-    #     return agent
 
     def get_connection(self):
         conn = sqlite3.connect('openai_data.db')

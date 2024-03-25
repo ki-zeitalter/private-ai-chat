@@ -1,6 +1,6 @@
 export interface Assistant {
 
-  agent_id: string;
+  assistant_id: string;
   name: string;
   type: string;
   creator: string;
