@@ -10,14 +10,14 @@ import {Observable} from "rxjs";
 import {map, shareReplay} from "rxjs/operators";
 import {RouterOutlet} from "@angular/router";
 import {ThreadsComponent} from "../threads/threads.component";
-import {AppCardsComponent} from "../app-cards/app-cards.component";
+import {AssistantsComponent} from "../assistants/assistants.component";
 
 @Component({
   selector: 'app-menu',
   standalone: true,
   imports: [
     ThreadsComponent,
-    AppCardsComponent,
+    AssistantsComponent,
     MatSidenavContainer,
     MatSidenav,
     MatSidenavContent,

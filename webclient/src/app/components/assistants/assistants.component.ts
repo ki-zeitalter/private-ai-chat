@@ -8,7 +8,7 @@ import {MatIcon} from "@angular/material/icon";
 import {RouterLink} from "@angular/router";
 
 @Component({
-  selector: 'app-app-cards',
+  selector: 'app-assistants',
   standalone: true,
   imports: [
     MatButton,
@@ -22,10 +22,10 @@ import {RouterLink} from "@angular/router";
     MatMiniFabButton,
     RouterLink
   ],
-  templateUrl: './app-cards.component.html',
-  styleUrl: './app-cards.component.scss'
+  templateUrl: './assistants.component.html',
+  styleUrl: './assistants.component.scss'
 })
-export class AppCardsComponent implements OnInit {
+export class AssistantsComponent implements OnInit {
 
   aiCards: Assistant[] = [];
 
