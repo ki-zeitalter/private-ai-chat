@@ -137,13 +137,13 @@ def delete_history(thread_id):
         return {"error": "History entry not found"}, 404
 
 
-@app.route("/agents", methods=["GET"])
+@app.route("/assistants", methods=["GET"])
 def get_agents():
     agents = agent_repository.get_agents()
     return jsonify([agent.to_dict() for agent in agents])
 
 
-@app.route("/agents/", methods=["POST"])
+@app.route("/assistants/", methods=["POST"])
 def create_agent():
     agent_data = request.json
     agent = Agent.from_dict(agent_data)
@@ -151,10 +151,10 @@ def create_agent():
     return jsonify(ai_service.create_agent(agent).to_dict())
 
 
-@app.route("/agents/<agent_id>", methods=["DELETE"])
-def delete_agent(agent_id):
+@app.route("/assistants/<agent_id>", methods=["DELETE"])
+def delete_agent(assistant_id):
     # TODO: Delete agent in OpenAI
-    return agent_repository.delete_agent(agent_id)
+    return agent_repository.delete_agent(assistant_id)
 
 
 # ------------------ START SERVER ------------------

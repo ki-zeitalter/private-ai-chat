@@ -16,12 +16,12 @@ export class AssistantService {
   }
 
   getAssistants(): Observable<Assistant[]> {
-    return this.httpClient.get<Assistant[]>("http://localhost:8080/agents")
+    return this.httpClient.get<Assistant[]>("http://localhost:8080/assistants")
 
   }
 
   saveAssistant(card: Assistant): Observable<Assistant> {
-    return this.httpClient.post<Assistant>("http://localhost:8080/agents", card)
+    return this.httpClient.post<Assistant>("http://localhost:8080/assistants", card)
   }
 
   activate(assistant: Assistant): void {
