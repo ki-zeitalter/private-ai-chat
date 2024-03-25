@@ -1,4 +1,4 @@
-export interface AICard {
+export interface Assistant {
 
   agent_id: string;
   name: string;

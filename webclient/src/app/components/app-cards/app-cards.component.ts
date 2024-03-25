@@ -2,8 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {MatButton, MatMiniFabButton} from "@angular/material/button";
 import {MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {NgForOf} from "@angular/common";
-import {AICard} from "../../model/ai-card.model";
-import {AiCardService} from "../../services/ai-card.service";
+import {Assistant} from "../../model/assistant.model";
+import {AssistantService} from "../../services/assistant.service";
 import {MatIcon} from "@angular/material/icon";
 import {RouterLink} from "@angular/router";
 
@@ -27,19 +27,19 @@ import {RouterLink} from "@angular/router";
 })
 export class AppCardsComponent implements OnInit {
 
-  aiCards: AICard[] = [];
+  aiCards: Assistant[] = [];
 
   constructor(
 
-    private aiCardService: AiCardService) {
+    private aiCardService: AssistantService) {
   }
 
-  activate(card: AICard): void {
+  activate(card: Assistant): void {
     this.aiCardService.activate(card);
   }
 
   ngOnInit() {
-    this.aiCardService.getAiCards().subscribe(cards => {
+    this.aiCardService.getAssistants().subscribe(cards => {
       this.aiCards = cards;
     })
   }

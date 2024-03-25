@@ -8,12 +8,12 @@ import {MatIcon} from "@angular/material/icon";
 import {MatButton, MatMiniFabButton} from "@angular/material/button";
 import {RouterLink} from "@angular/router";
 import {MatList, MatListItem, MatListOption, MatSelectionList} from "@angular/material/list";
-import {AICard} from "../../model/ai-card.model";
+import {Assistant} from "../../model/assistant.model";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {NgForOf} from "@angular/common";
 import {FormGroup, FormControl, Validators} from '@angular/forms';
 import {v4 as uuidv4} from "uuid";
-import {AiCardService} from "../../services/ai-card.service";
+import {AssistantService} from "../../services/assistant.service";
 
 @Component({
   selector: 'app-assistant-editor',
@@ -53,7 +53,7 @@ export class AssistantEditorComponent {
     // TODO functions
   });
 
-  constructor(private aiCardService: AiCardService) {
+  constructor(private aiCardService: AssistantService) {
   }
 
 
@@ -79,7 +79,7 @@ export class AssistantEditorComponent {
       tools.push('{"type": "retrieval"}');
     }
 
-    const assistantData: AICard = {
+    const assistantData: Assistant = {
       name: this.formular.get('name')!.value!,
       description: this.formular.get('description')!.value!,
       type: 'assistant',
@@ -91,7 +91,7 @@ export class AssistantEditorComponent {
     };
     console.log(assistantData);
 
-    this.aiCardService.saveAiCard(assistantData).subscribe(card => {
+    this.aiCardService.saveAssistant(assistantData).subscribe(card => {
       console.log(card);
     });
   }
