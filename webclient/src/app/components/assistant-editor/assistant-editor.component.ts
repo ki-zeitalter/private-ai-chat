@@ -6,7 +6,7 @@ import {MatSlideToggle} from "@angular/material/slide-toggle";
 import {MatDivider} from "@angular/material/divider";
 import {MatIcon} from "@angular/material/icon";
 import {MatButton, MatMiniFabButton} from "@angular/material/button";
-import {RouterLink} from "@angular/router";
+import {Router, RouterLink} from "@angular/router";
 import {MatList, MatListItem, MatListOption, MatSelectionList} from "@angular/material/list";
 import {Assistant} from "../../model/assistant.model";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
@@ -14,6 +14,7 @@ import {NgForOf} from "@angular/common";
 import {FormGroup, FormControl, Validators} from '@angular/forms';
 import {v4 as uuidv4} from "uuid";
 import {AssistantService} from "../../services/assistant.service";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-assistant-editor',
@@ -53,7 +54,9 @@ export class AssistantEditorComponent {
     // TODO functions
   });
 
-  constructor(private aiCardService: AssistantService) {
+  constructor(private aiCardService: AssistantService,
+              private _snackBar: MatSnackBar,
+              private router: Router) {
   }
 
 
@@ -93,6 +96,9 @@ export class AssistantEditorComponent {
 
     this.aiCardService.saveAssistant(assistantData).subscribe(card => {
       console.log(card);
+
+      this._snackBar.open('Assistant created', undefined, {duration: 4000});
+      this.router.navigate(['']).then();
     });
   }
 }
