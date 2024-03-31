@@ -1,6 +1,6 @@
 import uuid
 
-from services.assistant import Assistant
+from model.assistant import Assistant
 
 
 def _check_if_assistant_exists(assistants, assistant_name):

@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from requests.exceptions import ConnectionError
 
-from services.assistant import Assistant
+from model.assistant import Assistant
 from services.assistant_repository_sqlite import AssistantRepositorySqlite
 from services.aiservice import AIService
 from services.history_service import HistoryService
@@ -146,6 +146,7 @@ def create_assistant():
     assistant_data = request.json
     assistant = Assistant.from_dict(assistant_data)
     assistant.tools = [json.loads(tool) for tool in assistant.tools]
+    #assistant.files = [json.loads(file) for file in assistant.files]
     return jsonify(ai_service.create_assistant(assistant).to_dict())
 
 

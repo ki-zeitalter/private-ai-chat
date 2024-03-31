@@ -16,7 +16,7 @@ from langchain_core.outputs import LLMResult
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
-from services.assistant import Assistant
+from model.assistant import Assistant
 
 
 # Make sure to set the OPENAI_API_KEY environment variable in a .env file
@@ -238,6 +238,17 @@ class OpenAIService:
 
     def create_assistant(self, assistant: Assistant) -> Assistant:
         client = OpenAI()
+
+        file_ids = []
+        if assistant.files:
+            for requestFile in assistant.files:
+                pass
+                # file_reader = BufferedReader(requestFile)
+                #file = client.files.create(
+                #    file=(requestFile.filename, file_reader),
+                #    purpose='assistants'
+                #)
+                #file_ids.append(file.id)
 
         openai_assistant = client.beta.assistants.create(
             name=assistant.name,

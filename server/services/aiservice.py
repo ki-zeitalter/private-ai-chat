@@ -1,6 +1,6 @@
 import json
 
-from services.assistant import Assistant
+from model.assistant import Assistant
 
 
 class AIService:

@@ -1,6 +1,9 @@
+from model.file import File
+
+
 class Assistant:
     def __init__(self, assistant_id: str, name: str, type: str, creator: str, instructions: str, tools: list,
-                 description: str, provider_id: str = None, provider_name: str = None, ):
+                 description: str, provider_id: str = None, provider_name: str = None, files: list = None):
         self.assistant_id = assistant_id
         self.name = name
         self.type = type
@@ -10,12 +13,14 @@ class Assistant:
         self.creator = creator
         self.provider_id = provider_id
         self.provider_name = provider_name
+        self.files = files if files is not None else []
 
     def to_dict(self):
-        return self.__dict__
+        return {**self.__dict__, 'files': [file.to_dict() for file in self.files]}
 
     @classmethod
     def from_dict(cls, data: dict) -> 'Assistant':
+        files = [File.from_dict(file) for file in data.get('files', [])]
         return cls(
             assistant_id=data['assistant_id'],
             name=data['name'],
@@ -25,10 +30,6 @@ class Assistant:
             tools=data['tools'],
             provider_id=data.get('provider_id'),
             provider_name=data.get('provider_name'),
-            description=data['description']
+            description=data['description'],
+            files=files
         )
-
-    def __repr__(self):
-        return f"Assistant(assistant_id={self.assistant_id}, name={self.name}, type={self.type}, creator={self.creator}, " \
-               f"instructions={self.instructions}, tools={self.tools}, provider_id={self.provider_id}, " \
-               f"provider_name={self.provider_name}, description={self.description})"

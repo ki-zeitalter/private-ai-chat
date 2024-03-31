@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from services.assistant import Assistant
+from model.assistant import Assistant
 
 
 class AssistantRepository(ABC):
