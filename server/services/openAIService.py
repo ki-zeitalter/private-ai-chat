@@ -242,19 +242,19 @@ class OpenAIService:
         file_ids = []
         if assistant.files:
             for requestFile in assistant.files:
-                pass
-                # file_reader = BufferedReader(requestFile)
-                #file = client.files.create(
-                #    file=(requestFile.filename, file_reader),
-                #    purpose='assistants'
-                #)
-                #file_ids.append(file.id)
+                file_content_bytes = base64.b64decode(requestFile.content)
+                file = client.files.create(
+                    file=(requestFile.name, file_content_bytes),
+                    purpose='assistants'
+                )
+                file_ids.append(file.id)
 
         openai_assistant = client.beta.assistants.create(
             name=assistant.name,
             instructions=assistant.instructions,
             model="gpt-4-turbo-preview",  # TODO: Get model from assistant
-            tools=assistant.tools,  # TODO: files
+            tools=assistant.tools,
+            file_ids=file_ids
         )
 
         assistant.provider_id = openai_assistant.id
