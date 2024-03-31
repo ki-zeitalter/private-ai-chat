@@ -202,14 +202,15 @@ class OpenAIService:
                             print("Annotations", content.text.annotations)
 
                             for annotation in content.text.annotations:
-                                file_data = client.files.content(annotation.file_path.file_id)
-                                file_data_bytes = file_data.read()
-                                b64_content = base64.b64encode(file_data_bytes).decode()
-                                file_name = os.path.basename(annotation.text)
-                                mimetype = "application/octet-stream"
+                                if hasattr(annotation, 'file_path'):
+                                    file_data = client.files.content(annotation.file_path.file_id)
+                                    file_data_bytes = file_data.read()
+                                    b64_content = base64.b64encode(file_data_bytes).decode()
+                                    file_name = os.path.basename(annotation.text)
+                                    mimetype = "application/octet-stream"
 
-                                link = "data:" + mimetype + ";name=" + file_name + ";base64," + b64_content
-                                response_text = response_text.replace(annotation.text, link)
+                                    link = "data:" + mimetype + ";name=" + file_name + ";base64," + b64_content
+                                    response_text = response_text.replace(annotation.text, link)
 
                             # generated_file.append(
                             #    {"type": "file", "name": file_name,

@@ -64,7 +64,7 @@ export class AssistantEditorComponent {
     const reader = new FileReader();
     reader.onload = () => {
       const base64String = reader.result?.toString().split(',')[1];
-      this.files.push(base64String);
+      this.files.push({content: base64String, name: file.name, type: file.type});
     };
     reader.readAsDataURL(file);
   }
