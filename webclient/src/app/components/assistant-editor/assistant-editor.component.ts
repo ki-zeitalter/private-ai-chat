@@ -54,7 +54,7 @@ export class AssistantEditorComponent {
     // TODO functions
   });
 
-  constructor(private aiCardService: AssistantService,
+  constructor(private assistantService: AssistantService,
               private _snackBar: MatSnackBar,
               private router: Router) {
   }
@@ -92,12 +92,11 @@ export class AssistantEditorComponent {
       tools: tools,
       files: this.files
     };
-    console.log(assistantData);
 
-    this.aiCardService.saveAssistant(assistantData).subscribe(card => {
-      console.log(card);
 
+    this.assistantService.saveAssistant(assistantData).subscribe(card => {
       this._snackBar.open('Assistant created', undefined, {duration: 4000});
+      this.assistantService.onNewAssistant.next(undefined);
       this.router.navigate(['']).then();
     });
   }

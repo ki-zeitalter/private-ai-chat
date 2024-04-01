@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Observable} from "rxjs";
+import {Observable, Subject} from "rxjs";
 import {Assistant} from "../model/assistant.model";
 import {ChatService} from "./chat.service";
 import {Router} from "@angular/router";
@@ -9,6 +9,8 @@ import {HttpClient} from "@angular/common/http";
   providedIn: 'root'
 })
 export class AssistantService {
+
+  onNewAssistant = new Subject();
 
   constructor(private chatService: ChatService,
               private router: Router,

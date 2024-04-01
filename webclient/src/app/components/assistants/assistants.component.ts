@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, NgZone, OnInit} from '@angular/core';
 import {MatButton, MatMiniFabButton} from "@angular/material/button";
 import {MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardTitle} from "@angular/material/card";
 import {NgForOf} from "@angular/common";
@@ -30,7 +30,7 @@ export class AssistantsComponent implements OnInit {
   aiCards: Assistant[] = [];
 
   constructor(
-
+    private ngZone: NgZone,
     private aiCardService: AssistantService) {
   }
 
@@ -39,11 +39,21 @@ export class AssistantsComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.aiCardService.onNewAssistant.subscribe(() => {
+      this.ngZone.run(() =>
+        window.setTimeout(() => this.loadAssistants(), 2000)
+      )
+
+    })
+
+    this.loadAssistants();
+  }
+
+  loadAssistants(): void {
     this.aiCardService.getAssistants().subscribe(cards => {
       this.aiCards = cards;
     })
   }
-
 
 
 }
