@@ -7,6 +7,7 @@ from flask_cors import CORS
 from requests.exceptions import ConnectionError
 
 from model.assistant import Assistant
+from services.anthropic_service import AnthropicService
 from services.assistant_repository_sqlite import AssistantRepositorySqlite
 from services.aiservice import AIService
 from services.history_service import HistoryService
@@ -30,13 +31,16 @@ history_sqlite = HistorySQLiteRepository('history.db')
 
 history_service = HistoryService(history_sqlite)
 
-openai_service = OpenAIService()
+# openai_service = OpenAIService()
+
+anthropic_service = AnthropicService()
 
 assistant_repository = AssistantRepositorySqlite('assistants.db')
 
 ensure_assistants_are_predefined(assistant_repository)
 
-ai_service = AIService(history_service, openai_service, assistant_repository)
+# ai_service = AIService(history_service, openai_service, assistant_repository)
+ai_service = AIService(history_service, anthropic_service, assistant_repository)
 
 
 # assistant_service = AssistantService(AssistantRepositorySqlite('assistants.db'), ai_service)
