@@ -76,3 +76,5 @@ Use Code Interpreter:
 # Credits
 
 This application uses <a href="https://www.freepik.com/icons/chatbot">chatbot icon by UIcons</a>
+
+Provider icons by https://uxwing.com/

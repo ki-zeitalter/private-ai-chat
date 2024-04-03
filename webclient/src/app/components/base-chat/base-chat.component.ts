@@ -20,6 +20,8 @@ export abstract class BaseChatComponent implements OnInit, OnDestroy, AfterViewI
 
   initialMessages: MessageContent[] | undefined;
 
+  providerId: string | undefined = "openai";
+
   constructor(private chatService: ChatService) {
   }
 
@@ -62,6 +64,8 @@ export abstract class BaseChatComponent implements OnInit, OnDestroy, AfterViewI
     if (this.chatService.currentAssistantId)
       requestDetails.headers['Assistant-Id'] = this.chatService.currentAssistantId;
 
+    requestDetails.body['provider'] = this.providerId;
+
 
     return requestDetails;
   }
@@ -70,8 +74,10 @@ export abstract class BaseChatComponent implements OnInit, OnDestroy, AfterViewI
     this.onActivateThreadSubscription = this.chatService.onActivateThread.subscribe(thread => {
       if (thread) {
         this.initialMessages = thread.messages;
+        this.providerId = thread.provider;
       } else {
         this.initialMessages = undefined;
+        this.providerId = 'openai';
       }
 
       if (this.deepChatElement) {

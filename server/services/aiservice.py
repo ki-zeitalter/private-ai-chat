@@ -22,13 +22,14 @@ class AIService:
 
         thread_name = self.ensure_thread_name(messages, body, user_id, thread_id)
 
-        self.history_service.add_history(user_id, thread_id, messages, 'chat', thread_name)
+        provider_id = self.determine_provider(body, user_id, thread_id)
+        self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id, thread_name)
 
         model_service = self.get_provider(body, user_id, thread_id)
         result = model_service.chat(messages)
 
         messages.append({'role': 'ai', 'text': result['text']})
-        self.history_service.add_history(user_id, thread_id, messages, 'chat')
+        self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id)
 
         return result
 
@@ -38,12 +39,12 @@ class AIService:
 
         # self.ensure_system_prompt(messages)
         thread_name = self.ensure_thread_name(messages, body, user_id, thread_id)
-
-        self.history_service.add_history(user_id, thread_id, messages, 'chat', thread_name=thread_name)
+        provider_id = self.determine_provider(body, user_id, thread_id)
+        self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id, thread_name=thread_name)
 
         def callback(response):
             messages.append({'role': 'ai', 'text': response})
-            self.history_service.add_history(user_id, thread_id, messages, 'chat')
+            self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id)
 
         model_service = self.get_provider(body, user_id, thread_id)
         return model_service.chat_stream(messages, callback)
@@ -59,14 +60,16 @@ class AIService:
 
         thread_name = self.ensure_thread_name(messages, body, user_id, thread_id)
 
+        provider_id = self.determine_provider(body, user_id, thread_id)
+
         image_settings = body.get("imageSettings", {})
-        self.history_service.add_history(user_id, thread_id, messages, 'text-to-image', thread_name)
+        self.history_service.add_history(user_id, thread_id, messages, 'text-to-image', provider_id, thread_name)
 
         model_service = self.get_provider(body, user_id, thread_id)
         result = model_service.text_to_image(messages, image_settings)
 
         messages.append({'role': 'ai', 'files': result['files']})
-        self.history_service.add_history(user_id, thread_id, messages, 'text-to-image')
+        self.history_service.add_history(user_id, thread_id, messages, 'text-to-image', provider_id)
 
         return result
 
@@ -84,7 +87,9 @@ class AIService:
 
         thread_name = self.ensure_thread_name(messages, request, user_id, thread_id)
 
-        self.history_service.add_history(user_id, thread_id, messages, 'analyzer', thread_name=thread_name,
+        provider_id = self.determine_provider(request, user_id, thread_id)
+
+        self.history_service.add_history(user_id, thread_id, messages, 'analyzer', provider_id, thread_name=thread_name,
                                          assistant_id=assistant_id)
 
         assistant = self.assistant_repository.get_assistant(assistant_id)
@@ -97,7 +102,7 @@ class AIService:
         if result.get('files'):
             messages.append({'role': 'ai', 'files': result['files']})
 
-        self.history_service.add_history(user_id, thread_id, messages, 'chat')
+        self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id)
 
         return result
 

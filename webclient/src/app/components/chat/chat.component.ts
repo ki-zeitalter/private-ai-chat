@@ -6,6 +6,9 @@ import 'deep-chat'
 import {ChatService} from "../../services/chat.service";
 import {BaseChatComponent} from "../base-chat/base-chat.component";
 import {environment} from "../../../environments/environment";
+import {MatButton, MatIconButton} from "@angular/material/button";
+import {MatButtonToggle, MatButtonToggleGroup, MatButtonToggleModule} from "@angular/material/button-toggle";
+import {MatIcon} from "@angular/material/icon";
 
 @Component({
   selector: 'app-chat',
@@ -14,6 +17,12 @@ import {environment} from "../../../environments/environment";
   imports: [
     HighlightModule,
     CommonModule,
+    MatIconButton,
+    MatButton,
+    MatButtonToggleGroup,
+    MatButtonToggle,
+    MatButtonToggleModule,
+    MatIcon
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'

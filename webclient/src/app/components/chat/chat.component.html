@@ -91,6 +91,22 @@
         Ask any question and I'll try to assist you!
       </div>
     </div>
+    <div style="margin-top: 20px">
+      <div>Select AI provider:</div>
+      <button mat-icon-button (click)="providerId='openai'">
+        <img src="assets/chatgpt-icon.png" alt="ChatPG Icon">
+      </button>
+
+      <button mat-icon-button style="margin-left: 10px" (click)="providerId='anthropic'">
+        <img src="assets/claude-ai-icon.png" alt="Claude AI Icon">
+      </button>
+    </div>
   </div>
 
 </deep-chat>
+
+<img *ngIf="providerId == 'openai'" src="assets/chatgpt-icon.png" alt="Claude AI Icon"
+     style="position: absolute; left: 0; bottom: 0; margin: 2rem;">
+<img *ngIf="providerId == 'anthropic'" src="assets/claude-ai-icon.png" alt="Claude AI Icon"
+     style="position: absolute; left: 0; bottom: 0; margin: 2rem;">
+

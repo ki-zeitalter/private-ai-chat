@@ -7,7 +7,7 @@ class HistoryInMemoryRepository(HistoryRepository):
     def __init__(self):
         self._history = []
 
-    def add_history(self, user_id, thread_id, messages, app_type, thread_name=None, assistant_id: str = None):
+    def add_history(self, user_id, thread_id, messages, app_type, provider, thread_name=None, assistant_id: str = None):
         index_of_existing = self._get_history_index(user_id, thread_id)
 
         if index_of_existing is not None:
@@ -20,6 +20,7 @@ class HistoryInMemoryRepository(HistoryRepository):
                                   "messages": messages,
                                   "timestamp": datetime.now().isoformat(),
                                   "app_type": app_type,
+                                  "provider": provider,
                                   "assistant_id": assistant_id})
 
     def get_history(self, user_id):

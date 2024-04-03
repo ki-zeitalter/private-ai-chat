@@ -7,4 +7,5 @@ export interface Thread {
   messages: MessageContent[]
   app_type: string;
   assistant_id: string;
+  provider: string;
 }
