@@ -31,16 +31,20 @@ history_sqlite = HistorySQLiteRepository('history.db')
 
 history_service = HistoryService(history_sqlite)
 
-# openai_service = OpenAIService()
-
+openai_service = OpenAIService()
 anthropic_service = AnthropicService()
+
+services = {
+    'openai': openai_service,
+    'anthropic': anthropic_service
+}
 
 assistant_repository = AssistantRepositorySqlite('assistants.db')
 
 ensure_assistants_are_predefined(assistant_repository)
 
 # ai_service = AIService(history_service, openai_service, assistant_repository)
-ai_service = AIService(history_service, anthropic_service, assistant_repository)
+ai_service = AIService(history_service, services, assistant_repository)
 
 
 # assistant_service = AssistantService(AssistantRepositorySqlite('assistants.db'), ai_service)
