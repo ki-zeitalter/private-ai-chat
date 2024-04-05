@@ -140,7 +140,7 @@ class AIService:
         else:
             return "openai"  # FIXME: get provider from history
 
-    def ensure_thread_name(self, messages, provider_id, user_id, thread_id):
+    def ensure_thread_name(self, messages, provider_id: str, user_id, thread_id):
         if self.history_service.is_new_thread(user_id, thread_id):
             user_message = next((message for message in messages if message['role'] == 'user'), None)
             if user_message:

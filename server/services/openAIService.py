@@ -128,6 +128,10 @@ class OpenAIService:
         # https://deepchat.dev/docs/connect/#Response
         return {"files": [{"type": "image", "src": "data:image/png;base64," + result}]}
 
+
+
+
+
     def code_interpreter(self, messages, files, thread_id, assistant: Assistant):
         client = OpenAI()
 
