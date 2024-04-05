@@ -36,7 +36,7 @@ export abstract class BaseChatComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   ngAfterViewInit(): void {
-    //this.deepChatElement.nativeElement.introMessage = this.initialMessages;
+    this.deepChatElement.nativeElement.history = this.initialMessages;
 
     this.deepChatElement.nativeElement.requestInterceptor = (requestDetails: RequestDetails) => {
       return this.requestInterceptor(requestDetails);
@@ -90,7 +90,7 @@ export abstract class BaseChatComponent implements OnInit, OnDestroy, AfterViewI
       }
 
       if (this.deepChatElement) {
-       // this.deepChatElement.nativeElement.introMessage = this.initialMessages;
+       this.deepChatElement.nativeElement.history = this.initialMessages;
       }
     })
   }

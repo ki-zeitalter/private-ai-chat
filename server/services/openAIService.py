@@ -128,11 +128,11 @@ class OpenAIService:
         # https://deepchat.dev/docs/connect/#Response
         return {"files": [{"type": "image", "src": "data:image/png;base64," + result}]}
 
-
-
-
-
     def code_interpreter(self, messages, files, thread_id, assistant: Assistant):
+        return Response(self._code_interpreter(messages, files, thread_id, assistant),
+                        mimetype='text/event-stream')
+
+    def _code_interpreter(self, messages, files, thread_id, assistant: Assistant):
         client = OpenAI()
 
         thread_data = self.load_thread_data(thread_id)
@@ -165,56 +165,65 @@ class OpenAIService:
             file_ids=file_ids
         )
 
-        run = client.beta.threads.runs.create(
-            thread_id=thread.id,
-            assistant_id=openai_assistant.id,
-        )
-
         self.store_thread_data(thread_id, file_ids, thread.id, openai_assistant.id)
 
         existing_messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
         existing_message_ids = [message.id for message in existing_messages]
 
-        while run.status in ['queued', 'in_progress', 'cancelling']:
+        # Run the assistant asynchronously
+        generator = ThreadedGenerator()
+
+        run = client.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=openai_assistant.id,
+        )
+
+        threading.Thread(target=self.generate_assistant_response,
+                         args=(client, existing_message_ids, generator, run, thread)).start()
+        # self.generate_assistant_response(client, existing_message_ids, generator, run, thread)
+        return generator
+
+    def generate_assistant_response(self, client, existing_message_ids, generator, run, thread):
+        while run.status in ['queued', 'in_progress', 'cancelling', 'completed']:
             time.sleep(1)
             run = client.beta.threads.runs.retrieve(
                 thread_id=thread.id,
                 run_id=run.id
             )
 
-        if run.status == "completed":
-
             messages = client.beta.threads.messages.list(thread_id=thread.id, order="asc")
 
-            response_text = ""
             generated_file = []
             for message in messages:
 
                 if message.id in existing_message_ids:
                     continue
 
+                print(message)
+
                 for content in message.content:
+                    response_text = ""
                     if content.type == "text":
                         if message.role == "assistant":
                             response_text += content.text.value + "\n\n"
 
-                        if content.text.annotations:
-                            print("Annotations", content.text.annotations)
+                            if content.text.annotations:
+                                # print("Annotations", content.text.annotations)
 
-                            for annotation in content.text.annotations:
-                                if hasattr(annotation, 'file_path'):
-                                    file_data = client.files.content(annotation.file_path.file_id)
-                                    file_data_bytes = file_data.read()
-                                    b64_content = base64.b64encode(file_data_bytes).decode()
-                                    file_name = os.path.basename(annotation.text)
-                                    mimetype = "application/octet-stream"
+                                for annotation in content.text.annotations:
+                                    if hasattr(annotation, 'file_path'):
+                                        file_data = client.files.content(annotation.file_path.file_id)
+                                        file_data_bytes = file_data.read()
+                                        b64_content = base64.b64encode(file_data_bytes).decode()
+                                        file_name = os.path.basename(annotation.text)
+                                        mimetype = "application/octet-stream"
 
-                                    link = "data:" + mimetype + ";name=" + file_name + ";base64," + b64_content
-                                    response_text = response_text.replace(annotation.text, link)
+                                        link = "data:" + mimetype + ";name=" + file_name + ";base64," + b64_content
+                                        response_text = response_text.replace(annotation.text, link)
 
-                            # generated_file.append(
-                            #    {"type": "file", "name": file_name,
-                            #     "src": "data:text/csv;base64," + b64_content})
+                        generator.send("data: {}\n\n".format(
+                            json.dumps({"text": response_text})))
+                        existing_message_ids.append(message.id)
                     elif content.type == "image_file":
                         print("Image file")  # MessageContentImageFile
 
@@ -222,19 +231,21 @@ class OpenAIService:
                         image_data_bytes = image_data.read()
                         b64_content = base64.b64encode(image_data_bytes).decode()
                         generated_file.append({"type": "image", "src": "data:image/png;base64," + b64_content})
+
+                        generator.send("data: {}\n\n".format(
+                            json.dumps({"text": response_text, "files": [file for file in generated_file]})))
+                        existing_message_ids.append(message.id)
                     else:
                         print("Other type of message", content.type)
                         print(message.content[0])  # TODO: Handle other types of messages
 
-            if generated_file is not None:
-                return {"text": response_text,
-                        "files": [file for file in generated_file]}
+                # if generated_file is not None:
+                #    return {"text": response_text,
+                #            "files": [file for file in generated_file]}
 
-            return {"text": response_text}
-        else:
-            print("Status is not completed...", run.status)
-
-        return {'text': 'Something went wrong... sorry!.'}
+            if run.status == "completed":
+                generator.close()
+                break
 
     def create_assistant(self, assistant: Assistant) -> Assistant:
         client = OpenAI()

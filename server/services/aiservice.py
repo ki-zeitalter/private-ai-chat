@@ -72,7 +72,6 @@ class AIService:
         files = request.files.getlist("files")
         messages = []
 
-        provider_id_from_request = None
         if files:
             provider_id_from_request = request.form.get('provider_id')
             text_messages = list(request.form.items())
@@ -100,12 +99,14 @@ class AIService:
         # TODO: Errorhandling if assistant is not found
         model_service = self.get_provider(request, user_id, thread_id)
         result = model_service.code_interpreter(messages, files, thread_id, assistant)
-        messages.append({'role': 'ai', 'text': result['text']})
 
-        if result.get('files'):
-            messages.append({'role': 'ai', 'files': result['files']})
+        # TODO: create a new history entry with the result
+        # messages.append({'role': 'ai', 'text': result['text']})
 
-        self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id)
+        # if result.get('files'):
+        #    messages.append({'role': 'ai', 'files': result['files']})
+
+        # self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id)
 
         return result
 
