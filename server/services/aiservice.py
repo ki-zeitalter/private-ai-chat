@@ -11,21 +11,16 @@ class AIService:
         self.assistant_repository = assistant_repository
 
     def chat(self, body, user_id, thread_id):
-        # Text messages are stored inside request body using the Deep Chat JSON format:
-        # https://deepchat.dev/docs/connect
-
-        # Sends response back to Deep Chat using the Response format:
-        # https://deepchat.dev/docs/connect/#Response
 
         # Save the message to the history
         messages = body["messages"]
 
-        thread_name = self.ensure_thread_name(messages, body, user_id, thread_id)
+        thread_name = self.ensure_thread_name(messages, body['provider'], user_id, thread_id)
 
-        provider_id = self.determine_provider(body, user_id, thread_id)
+        provider_id = self.determine_provider(body['provider'], user_id, thread_id)
         self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id, thread_name)
 
-        model_service = self.get_provider(body, user_id, thread_id)
+        model_service = self.get_provider(provider_id, user_id, thread_id)
         result = model_service.chat(messages)
 
         messages.append({'role': 'ai', 'text': result['text']})
@@ -38,15 +33,15 @@ class AIService:
         messages = body["messages"]
 
         # self.ensure_system_prompt(messages)
-        thread_name = self.ensure_thread_name(messages, body, user_id, thread_id)
-        provider_id = self.determine_provider(body, user_id, thread_id)
+        thread_name = self.ensure_thread_name(messages, body['provider'], user_id, thread_id)
+        provider_id = self.determine_provider(body['provider'], user_id, thread_id)
         self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id, thread_name=thread_name)
 
         def callback(response):
             messages.append({'role': 'ai', 'text': response})
             self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id)
 
-        model_service = self.get_provider(body, user_id, thread_id)
+        model_service = self.get_provider(provider_id, user_id, thread_id)
         return model_service.chat_stream(messages, callback)
 
     def ensure_system_prompt(self, messages):
@@ -58,14 +53,14 @@ class AIService:
     def text_to_image(self, body, user_id, thread_id):
         messages = body["messages"]
 
-        thread_name = self.ensure_thread_name(messages, body, user_id, thread_id)
+        thread_name = self.ensure_thread_name(messages, body['provider'], user_id, thread_id)
 
-        provider_id = self.determine_provider(body, user_id, thread_id)
+        provider_id = self.determine_provider(body['provider'], user_id, thread_id)
 
         image_settings = body.get("imageSettings", {})
         self.history_service.add_history(user_id, thread_id, messages, 'text-to-image', provider_id, thread_name)
 
-        model_service = self.get_provider(body, user_id, thread_id)
+        model_service = self.get_provider(provider_id, user_id, thread_id)
         result = model_service.text_to_image(messages, image_settings)
 
         messages.append({'role': 'ai', 'files': result['files']})
@@ -77,17 +72,25 @@ class AIService:
         files = request.files.getlist("files")
         messages = []
 
+        provider_id_from_request = None
         if files:
+            provider_id_from_request = request.form.get('provider_id')
             text_messages = list(request.form.items())
             if len(text_messages) > 0:
                 for key, value in text_messages:
-                    messages.append(json.loads(value))
+                    if key.startswith("message"):
+                        messages.append(json.loads(value))
         else:
             messages = request.json["messages"]
+            provider_id_from_request = request.json.get('provider_id')
 
-        thread_name = self.ensure_thread_name(messages, request, user_id, thread_id)
+        # When provider_id_from_request is not set, set it to 'openai'
+        if not provider_id_from_request:
+            provider_id_from_request = 'openai'
 
-        provider_id = self.determine_provider(request, user_id, thread_id)
+        thread_name = self.ensure_thread_name(messages, provider_id_from_request, user_id, thread_id)
+
+        provider_id = self.determine_provider(provider_id_from_request, user_id, thread_id)
 
         self.history_service.add_history(user_id, thread_id, messages, 'analyzer', provider_id, thread_name=thread_name,
                                          assistant_id=assistant_id)
@@ -114,33 +117,33 @@ class AIService:
 
         return created_assistant
 
-    def _generate_thread_name(self, question, body, user_id, thread_id):
+    def _generate_thread_name(self, question, provider_id: str, user_id, thread_id):
         messages = [
             {'role': 'user',
              'text': f'What is the topic of the following question. Use only up to five words. Answer in the '
                      f'language of the question. The question: {question}'}]
 
-        model_service = self.get_provider(body, user_id, thread_id)
+        model_service = self.get_provider(provider_id, user_id, thread_id)
         response = model_service.chat(messages)
         return response['text']
 
     def _system_prompt_included(self, messages):
         return any(message['role'] == 'system' for message in messages)
 
-    def get_provider(self, body, user_id, thread_id):
-        provider = self.determine_provider(body, user_id, thread_id)
+    def get_provider(self, provider_id: str, user_id, thread_id):
+        provider = self.determine_provider(provider_id, user_id, thread_id)
         return self.services.get(provider)
 
-    def determine_provider(self, body, user_id, thread_id):
+    def determine_provider(self, provider_id: str, user_id, thread_id):
         if self.history_service.is_new_thread(user_id, thread_id):
-            return body.get("provider", "openai")
+            return provider_id
         else:
-            return "openai"
+            return "openai"  # FIXME: get provider from history
 
-    def ensure_thread_name(self, messages, body, user_id, thread_id):
+    def ensure_thread_name(self, messages, provider_id, user_id, thread_id):
         if self.history_service.is_new_thread(user_id, thread_id):
             user_message = next((message for message in messages if message['role'] == 'user'), None)
             if user_message:
-                thread_name = self._generate_thread_name(user_message['text'], body, user_id, thread_id)
+                thread_name = self._generate_thread_name(user_message['text'], provider_id, user_id, thread_id)
                 print(thread_name)
                 return thread_name

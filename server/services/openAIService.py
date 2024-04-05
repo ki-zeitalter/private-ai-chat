@@ -116,13 +116,9 @@ class OpenAIService:
         }
         chat_body = self.create_text_to_image_body(messages, image_settings)
 
-        print(chat_body)
-
         response = requests.post(
             "https://api.openai.com/v1/images/generations", json=chat_body, headers=headers)
         json_response = response.json()
-
-        print(json_response)
 
         if "error" in json_response:
             raise Exception(json_response["error"]["message"])
