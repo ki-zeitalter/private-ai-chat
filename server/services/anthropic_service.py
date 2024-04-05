@@ -7,10 +7,12 @@ from typing import Any
 import requests
 from flask import Response
 from langchain_anthropic import ChatAnthropic
+from langchain_anthropic.output_parsers import ToolsOutputParser
 from langchain_community.llms.anthropic import Anthropic
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.outputs import LLMResult
+from pydantic.v1 import BaseModel, Field
 
 from model.assistant import Assistant
 
@@ -85,14 +87,34 @@ class AnthropicService:
             temperature=0,
         )
 
-        response = chat(messages=self.convert_messages_to_langchain_format(messages))
+        class GetWeather(BaseModel):
+            """Get the current weather in a given location"""
+
+            location: str = Field(..., description="The city and state, e.g. San Francisco, CA")
+
+        parser = ToolsOutputParser()
+        llm_with_tools = chat.bind_tools([GetWeather])
+
+        response = llm_with_tools.invoke(self.convert_messages_to_langchain_format(messages))
 
         generator = ThreadedGenerator()
 
-        generator.send("data: {}\n\n".format(
-            json.dumps({"text": response.content})))
+        if response.response_metadata['stop_reason'] == "tool_use":
+            for tool_response in response.content:
+                print(tool_response)
+                if tool_response['type'] == 'text':
+                    generator.send("data: {}\n\n".format(json.dumps({"text": tool_response['text']})))
+                    history_callback({"text": tool_response['text']})
+                else:
+                    pass
 
-        history_callback({"text": response.content})
+        else:
+            generator.send("data: {}\n\n".format(
+                json.dumps({"text": response.content})))
+
+            history_callback({"text": response.content})
+
+        generator.close()
 
         return generator
 
