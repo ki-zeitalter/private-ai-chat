@@ -69,11 +69,12 @@ class AIService:
         return result
 
     def assistant_chat(self, request, user_id, thread_id, assistant_id):
+        assistant = self.assistant_repository.get_assistant(assistant_id)
+
         files = request.files.getlist("files")
         messages = []
 
         if files:
-            provider_id_from_request = request.form.get('provider_id')
             text_messages = list(request.form.items())
             if len(text_messages) > 0:
                 for key, value in text_messages:
@@ -81,36 +82,27 @@ class AIService:
                         messages.append(json.loads(value))
         else:
             messages = request.json["messages"]
-            provider_id_from_request = request.json.get('provider_id')
 
-        # When provider_id_from_request is not set, set it to 'openai'
-        if not provider_id_from_request:
-            provider_id_from_request = 'openai'
+        thread_name = self.ensure_thread_name(messages, assistant.provider, user_id, thread_id)
 
-        thread_name = self.ensure_thread_name(messages, provider_id_from_request, user_id, thread_id)
-
-        provider_id = self.determine_provider(provider_id_from_request, user_id, thread_id)
-
-        self.history_service.add_history(user_id, thread_id, messages, 'analyzer', provider_id, thread_name=thread_name,
+        self.history_service.add_history(user_id, thread_id, messages, 'analyzer', assistant.provider,
+                                         thread_name=thread_name,
                                          assistant_id=assistant_id)
 
-        assistant = self.assistant_repository.get_assistant(assistant_id)
-
-        # TODO: Errorhandling if assistant is not found
-        model_service = self.get_provider(request, user_id, thread_id)
+        model_service = self.services.get(assistant.provider)
 
         def callback(response):
             messages.append({'role': 'ai', 'text': response['text']})
             if response.get('files'):
                 messages.append({'role': 'ai', 'files': response['files']})
-            self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id)
+            self.history_service.add_history(user_id, thread_id, messages, 'chat', assistant.provider)
 
         result = model_service.code_interpreter(messages, files, thread_id, assistant, callback)
 
         return result
 
     def create_assistant(self, assistant: Assistant) -> Assistant:
-        model_service = self.services.get("openai")  # TODO: currently hardcoded to OpenAI
+        model_service = self.services.get(assistant.provider)
         created_assistant = model_service.create_assistant(assistant)
 
         self.assistant_repository.create_assistant(created_assistant)
@@ -138,7 +130,8 @@ class AIService:
         if self.history_service.is_new_thread(user_id, thread_id):
             return provider_id
         else:
-            return "openai"  # FIXME: get provider from history
+            history = self.history_service.get_history(user_id, thread_id)
+            return history[0]['provider']
 
     def ensure_thread_name(self, messages, provider_id: str, user_id, thread_id):
         if self.history_service.is_new_thread(user_id, thread_id):

@@ -24,7 +24,7 @@ class AssistantRepositorySqlite(AssistantRepository):
                     instructions TEXT,
                     tools TEXT,
                     provider_id TEXT,
-                    provider_name TEXT,
+                    provider TEXT,
                     description TEXT,
                     files TEXT
                 )
@@ -34,7 +34,7 @@ class AssistantRepositorySqlite(AssistantRepository):
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT assistant_id, name, type, creator, instructions, tools, provider_id, provider_name, 
+                SELECT assistant_id, name, type, creator, instructions, tools, provider_id, provider, 
                 description, files
                 FROM assistant
                 WHERE assistant_id = ?
@@ -48,7 +48,7 @@ class AssistantRepositorySqlite(AssistantRepository):
                                  instructions=row[4],
                                  tools=json.loads(row[5]),
                                  provider_id=row[6],
-                                 provider_name=row[7],
+                                 provider=row[7],
                                  description=row[8],
                                  files=[File.from_dict(file) for file in json.loads(row[9])])
             return None
@@ -57,7 +57,7 @@ class AssistantRepositorySqlite(AssistantRepository):
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT assistant_id, name, type, creator, instructions, tools, provider_id, provider_name, 
+                SELECT assistant_id, name, type, creator, instructions, tools, provider_id, provider, 
                 description, files
                 FROM assistant
             """)
@@ -69,7 +69,7 @@ class AssistantRepositorySqlite(AssistantRepository):
                               instructions=row[4],
                               tools=json.loads(row[5]),
                               provider_id=row[6],
-                              provider_name=row[7],
+                              provider=row[7],
                               description=row[8],
                               files=[File.from_dict(file) for file in json.loads(row[9])]) for row in rows]
 
@@ -78,7 +78,7 @@ class AssistantRepositorySqlite(AssistantRepository):
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO assistant (assistant_id, name, type, creator, instructions, tools, provider_id,
-                provider_name, description, files)
+                provider, description, files)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 assistant.assistant_id,
@@ -88,7 +88,7 @@ class AssistantRepositorySqlite(AssistantRepository):
                 assistant.instructions,
                 json.dumps(assistant.tools),
                 assistant.provider_id,
-                assistant.provider_name,
+                assistant.provider,
                 assistant.description,
                 json.dumps([file.to_dict() for file in assistant.files])))
             return assistant
@@ -99,7 +99,7 @@ class AssistantRepositorySqlite(AssistantRepository):
             cursor.execute("""
                 UPDATE assistant
                 SET name = ?, type = ?, creator = ?, instructions = ?, tools = ?, provider_id = ?,
-                provider_name = ?, description = ?, files = ?
+                provider = ?, description = ?, files = ?
                 WHERE assistant_id = ?
             """, (
                 assistant.name,
@@ -108,7 +108,7 @@ class AssistantRepositorySqlite(AssistantRepository):
                 assistant.instructions,
                 json.dumps(assistant.tools),
                 assistant.provider_id,
-                assistant.provider_name,
+                assistant.provider,
                 assistant.description,
                 json.dumps([file.to_dict() for file in assistant.files]),
                 assistant.assistant_id))
@@ -126,7 +126,7 @@ class AssistantRepositorySqlite(AssistantRepository):
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT assistant_id, name, type, creator, instructions, tools, provider_id, provider_name, 
+                SELECT assistant_id, name, type, creator, instructions, tools, provider_id, provider, 
                 description, files
                 FROM assistant
                 WHERE name = ?
@@ -140,7 +140,7 @@ class AssistantRepositorySqlite(AssistantRepository):
                                  instructions=row[4],
                                  tools=json.loads(row[5]),
                                  provider_id=row[6],
-                                 provider_name=row[7],
+                                 provider=row[7],
                                  description=row[8],
                                  files=[File.from_dict(file) for file in json.loads(row[9])])
             return None

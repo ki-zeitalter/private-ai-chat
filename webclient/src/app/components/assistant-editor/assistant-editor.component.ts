@@ -48,7 +48,7 @@ export class AssistantEditorComponent {
     name: new FormControl('', Validators.required),
     instructions: new FormControl('', Validators.required),
     description: new FormControl('', Validators.required),
-    model: new FormControl(''),
+    provider: new FormControl('', Validators.required),
     codeInterpreter: new FormControl(false),
     retrieval: new FormControl(false),
     // TODO functions
@@ -90,7 +90,8 @@ export class AssistantEditorComponent {
       creator: 'manual',
       instructions: this.formular.get('instructions')!.value!,
       tools: tools,
-      files: this.files
+      files: this.files,
+      provider: this.formular.get('provider')!.value!
     };
 
 

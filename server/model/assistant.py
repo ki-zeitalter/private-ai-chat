@@ -3,7 +3,7 @@ from model.file import File
 
 class Assistant:
     def __init__(self, assistant_id: str, name: str, type: str, creator: str, instructions: str, tools: list,
-                 description: str, provider_id: str = None, provider_name: str = None, files: list = None):
+                 description: str, provider_id: str = None, provider: str = None, files: list = None):
         self.assistant_id = assistant_id
         self.name = name
         self.type = type
@@ -12,7 +12,7 @@ class Assistant:
         self.instructions = instructions
         self.creator = creator
         self.provider_id = provider_id
-        self.provider_name = provider_name
+        self.provider = provider
         self.files = files if files is not None else []
 
     def to_dict(self):
@@ -29,7 +29,7 @@ class Assistant:
             instructions=data['instructions'],
             tools=data['tools'],
             provider_id=data.get('provider_id'),
-            provider_name=data.get('provider_name'),
+            provider=data.get('provider'),
             description=data['description'],
             files=files
         )

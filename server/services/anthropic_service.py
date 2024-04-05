@@ -73,11 +73,32 @@ class AnthropicService:
 
         return {"text": "Not implemented yet"}
 
-    def code_interpreter(self, messages, files, thread_id, assistant: Assistant):
-        return {'text': 'Not implemented yet'}
+    def code_interpreter(self, messages, files, thread_id, assistant: Assistant, history_callback):
+        return Response(self._code_interpreter(messages, files, thread_id, assistant, history_callback),
+                        mimetype='text/event-stream')
+
+    def _code_interpreter(self, messages, files, thread_id, assistant: Assistant, history_callback):
+        chat = ChatAnthropic(
+            model=os.getenv("ANTHROPIC_MODEL", "claude-3-opus-20240229"),
+            verbose=True,
+            streaming=False,
+            temperature=0,
+        )
+
+        response = chat(messages=self.convert_messages_to_langchain_format(messages))
+
+        generator = ThreadedGenerator()
+
+        generator.send("data: {}\n\n".format(
+            json.dumps({"text": response.content})))
+
+        history_callback({"text": response.content})
+
+        return generator
 
     def create_assistant(self, assistant: Assistant) -> Assistant:
-        pass
+        # Nothing to do here
+        return assistant
 
 
 class ThreadedGenerator:

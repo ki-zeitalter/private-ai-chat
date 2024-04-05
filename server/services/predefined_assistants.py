@@ -24,5 +24,6 @@ def ensure_assistants_are_predefined(assistant_service):
             creator="AUTOMATED",
             instructions="",
             tools=[],
-            description="Generate images by DALL-E 3"
+            description="Generate images by DALL-E 3",
+            provider="openai"
         ))

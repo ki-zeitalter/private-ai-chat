@@ -269,13 +269,13 @@ class OpenAIService:
         openai_assistant = client.beta.assistants.create(
             name=assistant.name,
             instructions=assistant.instructions,
-            model="gpt-4-turbo-preview",  # TODO: Get model from assistant
+            model="gpt-4-turbo-preview",
             tools=assistant.tools,
             file_ids=file_ids
         )
 
         assistant.provider_id = openai_assistant.id
-        assistant.provider_name = "openai"
+        assistant.provider = "openai"
 
         return assistant
 
