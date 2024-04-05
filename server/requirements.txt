@@ -2,7 +2,8 @@ Flask~=3.0.2
 python-dotenv~=1.0.1
 requests~=2.31.0
 bs4~=0.0.2
-beautifulsoup4~=4.12.3
-langchain~=0.1.11
-langchain_openai~=0.0.8
-langchain-anthropic~=0.1.4
+beautifulsoup4==4.12.3
+langchain==0.1.14
+langchain-anthropic==0.1.6
+langchain-community==0.0.31
+langchain-openai==0.1.1
