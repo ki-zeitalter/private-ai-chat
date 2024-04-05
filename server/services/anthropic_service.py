@@ -10,7 +10,7 @@ from langchain_anthropic import ChatAnthropic
 from langchain_anthropic.output_parsers import ToolsOutputParser
 from langchain_community.llms.anthropic import Anthropic
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langchain_core.outputs import LLMResult
 from pydantic.v1 import BaseModel, Field
 
@@ -62,6 +62,8 @@ class AnthropicService:
             content = message["text"]
             if role == "ai":
                 lc_message = AIMessage(content=content)
+            elif role == "tool":
+                lc_message = ToolMessage(content=content)
             else:  # role is "human"
                 lc_message = HumanMessage(content=content)
             lc_messages.append(lc_message)
@@ -95,18 +97,27 @@ class AnthropicService:
         parser = ToolsOutputParser()
         llm_with_tools = chat.bind_tools([GetWeather])
 
-        response = llm_with_tools.invoke(self.convert_messages_to_langchain_format(messages))
+        lc_messages = self.convert_messages_to_langchain_format(messages)
+        response = llm_with_tools.invoke(lc_messages)
 
         generator = ThreadedGenerator()
 
         if response.response_metadata['stop_reason'] == "tool_use":
+            lc_messages.append(AIMessage(response.content))
             for tool_response in response.content:
                 print(tool_response)
+
                 if tool_response['type'] == 'text':
                     generator.send("data: {}\n\n".format(json.dumps({"text": tool_response['text']})))
                     history_callback({"text": tool_response['text']})
+
                 else:
-                    pass
+                    lc_messages.append(ToolMessage(content='Sunny, 30°C.', tool_call_id=tool_response['id']))
+                    response = llm_with_tools.invoke(lc_messages)
+                    generator.send("data: {}\n\n".format(
+                        json.dumps({"text": response.content})))
+
+                    history_callback({"text": response.content})
 
         else:
             generator.send("data: {}\n\n".format(
