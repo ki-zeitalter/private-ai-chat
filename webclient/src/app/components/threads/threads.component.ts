@@ -1,7 +1,7 @@
 import {Component, Inject, NgZone, OnInit} from '@angular/core';
 import {MatListItem, MatNavList} from "@angular/material/list";
 import {NgForOf, NgIf} from "@angular/common";
-import {MessageContent} from "deep-chat/dist/types/messages";
+import {MessageContent} from "deep-chat-dev/dist/types/messages";
 import {Thread} from "../../model/thread.model";
 import {ThreadsService} from "../../services/threads.service";
 import {ChatService} from "../../services/chat.service";

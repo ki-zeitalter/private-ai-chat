@@ -2,7 +2,7 @@ import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import {HighlightModule} from "ngx-highlightjs";
 import {CommonModule} from "@angular/common";
 
-import 'deep-chat'
+import 'deep-chat-dev'
 import {ChatService} from "../../services/chat.service";
 import {BaseChatComponent} from "../base-chat/base-chat.component";
 import {environment} from "../../../environments/environment";

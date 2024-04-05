@@ -1,4 +1,4 @@
-import {MessageContent} from "deep-chat/dist/types/messages";
+import {MessageContent} from "deep-chat-dev/dist/types/messages";
 
 export interface Thread {
   user_id: string;

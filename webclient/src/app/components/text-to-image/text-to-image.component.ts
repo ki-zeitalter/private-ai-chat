@@ -2,7 +2,7 @@ import {Component, CUSTOM_ELEMENTS_SCHEMA, Inject} from '@angular/core';
 import {HighlightModule} from "ngx-highlightjs";
 import {CommonModule} from "@angular/common";
 
-import 'deep-chat'
+import 'deep-chat-dev'
 import {ChatService} from "../../services/chat.service";
 import {BaseChatComponent} from "../base-chat/base-chat.component";
 import {MatIcon} from "@angular/material/icon";
@@ -20,7 +20,7 @@ import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatOption, MatSelect} from "@angular/material/select";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
-import {RequestDetails} from "deep-chat/dist/types/interceptors";
+import {RequestDetails} from "deep-chat-dev/dist/types/interceptors";
 import {environment} from "../../../environments/environment";
 
 @Component({

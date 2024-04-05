@@ -1,6 +1,6 @@
 import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 
-import 'deep-chat'
+import 'deep-chat-dev'
 import './code_highlight';
 import {MenuComponent} from "./components/menu/menu.component";
 
