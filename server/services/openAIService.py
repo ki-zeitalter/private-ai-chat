@@ -128,11 +128,11 @@ class OpenAIService:
         # https://deepchat.dev/docs/connect/#Response
         return {"files": [{"type": "image", "src": "data:image/png;base64," + result}]}
 
-    def code_interpreter(self, messages, files, thread_id, assistant: Assistant):
-        return Response(self._code_interpreter(messages, files, thread_id, assistant),
+    def code_interpreter(self, messages, files, thread_id, assistant: Assistant, history_callback):
+        return Response(self._code_interpreter(messages, files, thread_id, assistant, history_callback),
                         mimetype='text/event-stream')
 
-    def _code_interpreter(self, messages, files, thread_id, assistant: Assistant):
+    def _code_interpreter(self, messages, files, thread_id, assistant: Assistant, history_callback):
         client = OpenAI()
 
         thread_data = self.load_thread_data(thread_id)
@@ -179,11 +179,11 @@ class OpenAIService:
         )
 
         threading.Thread(target=self.generate_assistant_response,
-                         args=(client, existing_message_ids, generator, run, thread)).start()
+                         args=(client, existing_message_ids, generator, run, thread, history_callback)).start()
         # self.generate_assistant_response(client, existing_message_ids, generator, run, thread)
         return generator
 
-    def generate_assistant_response(self, client, existing_message_ids, generator, run, thread):
+    def generate_assistant_response(self, client, existing_message_ids, generator, run, thread, history_callback):
         while run.status in ['queued', 'in_progress', 'cancelling', 'completed']:
             time.sleep(1)
             run = client.beta.threads.runs.retrieve(
@@ -223,6 +223,9 @@ class OpenAIService:
 
                         generator.send("data: {}\n\n".format(
                             json.dumps({"text": response_text})))
+
+                        history_callback({"text": response_text})
+
                         existing_message_ids.append(message.id)
                     elif content.type == "image_file":
                         print("Image file")  # MessageContentImageFile
@@ -234,6 +237,9 @@ class OpenAIService:
 
                         generator.send("data: {}\n\n".format(
                             json.dumps({"text": response_text, "files": [file for file in generated_file]})))
+
+                        history_callback({"text": response_text, "files": [file for file in generated_file]})
+
                         existing_message_ids.append(message.id)
                     else:
                         print("Other type of message", content.type)

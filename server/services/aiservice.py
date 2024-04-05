@@ -98,15 +98,14 @@ class AIService:
 
         # TODO: Errorhandling if assistant is not found
         model_service = self.get_provider(request, user_id, thread_id)
-        result = model_service.code_interpreter(messages, files, thread_id, assistant)
 
-        # TODO: create a new history entry with the result
-        # messages.append({'role': 'ai', 'text': result['text']})
+        def callback(response):
+            messages.append({'role': 'ai', 'text': response['text']})
+            if response.get('files'):
+                messages.append({'role': 'ai', 'files': response['files']})
+            self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id)
 
-        # if result.get('files'):
-        #    messages.append({'role': 'ai', 'files': result['files']})
-
-        # self.history_service.add_history(user_id, thread_id, messages, 'chat', provider_id)
+        result = model_service.code_interpreter(messages, files, thread_id, assistant, callback)
 
         return result
 
