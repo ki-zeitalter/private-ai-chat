@@ -4,15 +4,12 @@ import queue
 import threading
 from typing import Any
 
-import requests
 from flask import Response
+from interpreter import interpreter
 from langchain_anthropic import ChatAnthropic
-from langchain_anthropic.output_parsers import ToolsOutputParser
-from langchain_community.llms.anthropic import Anthropic
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langchain_core.outputs import LLMResult
-from pydantic.v1 import BaseModel, Field
 
 from model.assistant import Assistant
 
@@ -38,15 +35,14 @@ class AnthropicService:
     def llm_thread(self, generator, messages, callback):
 
         try:
-            chat = ChatAnthropic(
-                model=os.getenv("ANTHROPIC_MODEL", "claude-3-opus-20240229"),
-                verbose=True,
-                streaming=True,
-                callbacks=[ChainStreamHandler(generator, callback)],
-                temperature=0,
-            )
+            result = interpreter.chat(message=messages[-1]["content"], display=True, stream=False, blocking=True)
+            print(result)
+            for partial_result in result:
+                response_text = partial_result.get("content", "")
+                generator.send("data: {}\n\n".format(
+                    json.dumps({"text": response_text})))
 
-            chat(messages=messages)
+                callback({"text": response_text})
         finally:
             generator.close()
 
@@ -54,6 +50,19 @@ class AnthropicService:
         generator = ThreadedGenerator()
         threading.Thread(target=self.llm_thread, args=(generator, prompt, callback)).start()
         return generator
+
+    def convert_messages_to_interpreter_format(self, messages):
+        interpreter_messages = []
+        for message in messages:
+            role = message["role"]
+            if role == "ai":
+                role = "assistant"
+
+            # The interpreter knows different types of messages. Currently we can't distinguish between them.
+            # Therefore, we just use "message"
+            interpreter_messages.append({"role": role, "content": message["text"], "type": "message"})
+
+        return interpreter_messages
 
     def convert_messages_to_langchain_format(self, messages):
         lc_messages = []
@@ -82,50 +91,17 @@ class AnthropicService:
                         mimetype='text/event-stream')
 
     def _code_interpreter(self, messages, files, thread_id, assistant: Assistant, history_callback):
-        chat = ChatAnthropic(
-            model=os.getenv("ANTHROPIC_MODEL", "claude-3-opus-20240229"),
-            verbose=True,
-            streaming=False,
-            temperature=0,
-        )
 
-        class GetWeather(BaseModel):
-            """Get the current weather in a given location"""
+        interpreter.llm.model = "claude-3-opus-20240229"
+        interpreter.auto_run = True
 
-            location: str = Field(..., description="The city and state, e.g. San Francisco, CA")
+        # Copy the messages list to conv_messages
+        conv_messages = self.convert_messages_to_interpreter_format(messages)
 
-        parser = ToolsOutputParser()
-        llm_with_tools = chat.bind_tools([GetWeather])
-
-        lc_messages = self.convert_messages_to_langchain_format(messages)
-        response = llm_with_tools.invoke(lc_messages)
+        interpreter.messages = conv_messages[:-1]
 
         generator = ThreadedGenerator()
-
-        if response.response_metadata['stop_reason'] == "tool_use":
-            lc_messages.append(AIMessage(response.content))
-            for tool_response in response.content:
-                print(tool_response)
-
-                if tool_response['type'] == 'text':
-                    generator.send("data: {}\n\n".format(json.dumps({"text": tool_response['text']})))
-                    history_callback({"text": tool_response['text']})
-
-                else:
-                    lc_messages.append(ToolMessage(content='Sunny, 30°C.', tool_call_id=tool_response['id']))
-                    response = llm_with_tools.invoke(lc_messages)
-                    generator.send("data: {}\n\n".format(
-                        json.dumps({"text": response.content})))
-
-                    history_callback({"text": response.content})
-
-        else:
-            generator.send("data: {}\n\n".format(
-                json.dumps({"text": response.content})))
-
-            history_callback({"text": response.content})
-
-        generator.close()
+        threading.Thread(target=self.llm_thread, args=(generator, conv_messages, history_callback)).start()
 
         return generator
 
