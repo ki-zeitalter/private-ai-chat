@@ -85,13 +85,21 @@ class HistorySQLiteRepository(HistoryRepository):
         with sqlite3.connect(self._db_file) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT messages
+                SELECT thread_id, thread_name, messages, timestamp, app_type, provider, assistant_id
                 FROM history
                 WHERE user_id = ? AND thread_id = ?
             """, (user_id, thread_id))
             result = cursor.fetchone()
             if result:
-                return json.loads(result[0])
+                return {
+                    "thread_id": result[0],
+                    "thread_name": result[1],
+                    "messages": json.loads(result[2]),
+                    "timestamp": result[3],
+                    "app_type": result[4],
+                    "provider": result[5],
+                    "assistant_id": result[6]
+                }
             else:
                 return None
 

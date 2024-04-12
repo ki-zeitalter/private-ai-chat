@@ -130,8 +130,8 @@ class AIService:
         if self.history_service.is_new_thread(user_id, thread_id):
             return provider_id
         else:
-            history = self.history_service.get_history(user_id, thread_id)
-            return history[0]['provider']
+            history = self.history_service.get_history_thread(user_id, thread_id)
+            return history['provider']
 
     def ensure_thread_name(self, messages, provider_id: str, user_id, thread_id):
         if self.history_service.is_new_thread(user_id, thread_id):

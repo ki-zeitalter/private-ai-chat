@@ -35,14 +35,15 @@ class AnthropicService:
     def llm_thread(self, generator, messages, callback):
 
         try:
-            result = interpreter.chat(message=messages[-1]["content"], display=True, stream=False, blocking=True)
-            print(result)
-            for partial_result in result:
-                response_text = partial_result.get("content", "")
-                generator.send("data: {}\n\n".format(
-                    json.dumps({"text": response_text})))
+            chat = ChatAnthropic(
+                model=os.getenv("ANTHROPIC_MODEL", "claude-3-opus-20240229"),
+                verbose=True,
+                streaming=True,
+                callbacks=[ChainStreamHandler(generator, callback)],
+                temperature=0,
+            )
 
-                callback({"text": response_text})
+            chat(messages=messages)
         finally:
             generator.close()
 
@@ -91,6 +92,7 @@ class AnthropicService:
                         mimetype='text/event-stream')
 
     def _code_interpreter(self, messages, files, thread_id, assistant: Assistant, history_callback):
+        # TODO: get the desired model from a environment variable
 
         interpreter.llm.model = "claude-3-opus-20240229"
         interpreter.auto_run = True
