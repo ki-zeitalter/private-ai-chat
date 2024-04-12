@@ -47,6 +47,19 @@ class AnthropicService:
         finally:
             generator.close()
 
+    def llm_thread_interpreter(self, generator, messages, callback):
+        try:
+            result = interpreter.chat(message=messages[-1]["content"], display=True, stream=False, blocking=True)
+            print(result)
+            for partial_result in result:
+                response_text = partial_result.get("content", "")
+                generator.send("data: {}\n\n".format(
+                    json.dumps({"text": response_text})))
+
+                callback({"text": response_text})
+        finally:
+            generator.close()
+
     def chain(self, prompt, callback):
         generator = ThreadedGenerator()
         threading.Thread(target=self.llm_thread, args=(generator, prompt, callback)).start()
@@ -103,7 +116,7 @@ class AnthropicService:
         interpreter.messages = conv_messages[:-1]
 
         generator = ThreadedGenerator()
-        threading.Thread(target=self.llm_thread, args=(generator, conv_messages, history_callback)).start()
+        threading.Thread(target=self.llm_thread_interpreter, args=(generator, conv_messages, history_callback)).start()
 
         return generator
 
